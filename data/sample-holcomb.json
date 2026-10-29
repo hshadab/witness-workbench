@@ -1,0 +1,572 @@
+{
+ "id": "sample-holcomb",
+ "label": "Sample run · Holcomb · examining",
+ "witness": "dep-holcomb",
+ "lens": "examine",
+ "createdAt": "2026-10-28T18:00:00Z",
+ "origin": "Prepared during the build by Claude, following the same two instructions the live run sends. The checker on this page verifies it exactly as it verifies a live run.",
+ "tier": "build-time",
+ "extraction": [
+  {
+   "id": "T1",
+   "topic": "Nature of Cascade arrangement",
+   "claim": "Holcomb testified the Cascade arrangement was a routine exploration of capacity, authorized through normal channels.",
+   "quote": "routine exploration of additional distribution capacity",
+   "para": 31,
+   "search": [
+    "keep it quiet",
+    "Cascade trial run",
+    "off the books",
+    "authorized Cascade"
+   ]
+  },
+  {
+   "id": "T2",
+   "topic": "Meaning of \"keep it quiet\"",
+   "claim": "Holcomb testified \"keep it quiet for now\" was about avoiding confusion with the sales team, not concealment from Harborview.",
+   "quote": "didn't want to create confusion with the sales team",
+   "para": 32,
+   "search": [
+    "keep it quiet",
+    "Yee Harborview",
+    "sales team confusion"
+   ]
+  },
+  {
+   "id": "T3",
+   "topic": "The \"transitioning\" email",
+   "claim": "Holcomb testified the August 22 \"transitioning\" email was brainstorming about the long term, not a plan.",
+   "quote": "a long-term strategic discussion, not an immediate plan",
+   "para": 33,
+   "search": [
+    "transitioning",
+    "phasing Harborview out",
+    "increase Cascade allocation",
+    "green light"
+   ]
+  },
+  {
+   "id": "T4",
+   "topic": "Supply chain explanation",
+   "claim": "Holcomb maintained that supply chain pressures existed when Harborview's shipments fell.",
+   "quote": "There were supply chain pressures at the time.",
+   "para": 36,
+   "search": [
+    "supply chain issues",
+    "why shipments are down",
+    "supply chain narrative"
+   ]
+  },
+  {
+   "id": "T5",
+   "topic": "Cause of Year 3 shortfall",
+   "claim": "Holcomb attributed Harborview's Year 3 shortfall to market conditions and Harborview's own performance.",
+   "quote": "market conditions in the territory",
+   "para": 25,
+   "search": [
+    "adjust shipments other channels",
+    "Cascade allocation",
+    "production capacity prioritizing",
+    "market conditions"
+   ]
+  },
+  {
+   "id": "T6",
+   "topic": "Duty to tell Harborview",
+   "claim": "Holcomb testified Greenleaf had no obligation to tell Harborview about the Cascade shipments.",
+   "quote": "I don't believe we had an obligation to notify them of every operational decision.",
+   "para": 35,
+   "search": [
+    "notify Harborview",
+    "contract situation territory",
+    "Harborview finds out",
+    "exclusive right Territory"
+   ]
+  },
+  {
+   "id": "T7",
+   "topic": "Reliance on internal guidance",
+   "claim": "Holcomb testified he relied on unspecified internal guidance about what the agreement permitted.",
+   "quote": "I relied on internal guidance regarding what was permitted under the agreement.",
+   "para": 35,
+   "search": [
+    "internal guidance",
+    "permitted under the agreement",
+    "Harborview finds out leverage",
+    "contract situation"
+   ]
+  },
+  {
+   "id": "T8",
+   "topic": "Knowledge of QA directive",
+   "claim": "Holcomb denied prior knowledge of Stanton's directive to tighten QA on Harborview batches.",
+   "quote": "Holcomb stated that he was \"not on that email\" and denied having prior knowledge of the directive.",
+   "para": 43,
+   "search": [
+    "tighten up QA Harborview",
+    "QA side separately",
+    "loop in Lisa Fong"
+   ]
+  },
+  {
+   "id": "T9",
+   "topic": "Rejection rates by distributor",
+   "claim": "Holcomb testified he did not track QA rejection rates by distributor.",
+   "quote": "I wasn't tracking rejection rates by distributor. That would be a QA question.",
+   "para": 42,
+   "search": [
+    "rejection rate",
+    "Cascade lots enhanced screening",
+    "rejections by distributor"
+   ]
+  },
+  {
+   "id": "T10",
+   "topic": "Basis for the breach notice",
+   "claim": "Holcomb testified the breach notice was justified because Harborview's trajectory showed it would miss the minimum.",
+   "quote": "it was clear from the trajectory that they weren't going to hit the minimum",
+   "para": 49,
+   "search": [
+    "basis to act on the contract",
+    "not hitting minimums",
+    "trajectory Year 3 minimum"
+   ]
+  },
+  {
+   "id": "T11",
+   "topic": "Non-renewal notice",
+   "claim": "Holcomb did not recall whether Greenleaf sent a non-renewal notice under Section 9.3.",
+   "quote": "\"wasn't sure\" and \"didn't recall\" whether such a notice had been sent",
+   "para": 51,
+   "search": [
+    "non-renewal notice",
+    "90-day non-renewal deadline",
+    "December 15"
+   ]
+  },
+  {
+   "id": "T12",
+   "topic": "Cascade shipment volume",
+   "claim": "Holcomb confirmed about $1.9 million in product went to Cascade between June 2022 and February 2023.",
+   "quote": "approximately $1.9 million at wholesale value",
+   "para": 34,
+   "search": [
+    "Cascade wholesale value",
+    "$420K",
+    "$630K"
+   ]
+  },
+  {
+   "id": "T13",
+   "topic": "Deletion of communications",
+   "claim": "Holcomb testified he did not recall deleting any Cascade-related communications before the hold.",
+   "quote": "I follow company retention policies. I don't recall deleting anything specific.",
+   "para": 62,
+   "search": [
+    "delete emails",
+    "retention policy",
+    "litigation hold"
+   ]
+  }
+ ],
+ "analysis": [
+  {
+   "id": "T1",
+   "status": "contradicts",
+   "materiality": "high",
+   "evidence": [
+    {
+     "doc": "em-hys",
+     "para": 3,
+     "quote": "Keep it quiet for now."
+    },
+    {
+     "doc": "em-hys",
+     "para": 5,
+     "quote": "I'd prefer to keep this informal and off the books for now."
+    }
+   ],
+   "analysis": "A routine, authorized arrangement would not need to be kept quiet or off the books. His own first email to Yee frames it as confidential from the start.",
+   "questions": [
+    {
+     "type": "lock-in",
+     "text": "You told us the Cascade arrangement was routine and authorized through normal business channels. Who authorized it, and when?"
+    },
+    {
+     "type": "lock-in",
+     "text": "Routine arrangements go through Greenleaf's normal books and records, correct?"
+    },
+    {
+     "type": "confront",
+     "text": "On June 8, 2022 you wrote to Mr. Yee: \"I'd prefer to keep this informal and off the books for now.\" Why did a routine, authorized arrangement need to be kept off the books?",
+     "exhibit": {
+      "doc": "em-hys",
+      "para": 5
+     }
+    }
+   ]
+  },
+  {
+   "id": "T2",
+   "status": "contradicts",
+   "materiality": "high",
+   "evidence": [
+    {
+     "doc": "em-hys",
+     "para": 12,
+     "quote": "I know Harborview handles Greenleaf distribution in this area"
+    },
+    {
+     "doc": "em-hys",
+     "para": 17,
+     "quote": "On the Harborview thing — don't worry about it."
+    }
+   ],
+   "analysis": "When Yee raised Harborview by name, Holcomb told him not to worry about it. The concern being managed was Harborview, not Greenleaf's sales team.",
+   "questions": [
+    {
+     "type": "lock-in",
+     "text": "Your only reason for \"keep it quiet\" was to avoid confusing Greenleaf's own sales team. Is that right?"
+    },
+    {
+     "type": "confront",
+     "text": "Two days later Mr. Yee wrote that he knew Harborview handled Greenleaf distribution in the area. You replied, \"On the Harborview thing — don't worry about it.\" What were you telling him not to worry about?",
+     "exhibit": {
+      "doc": "em-hys",
+      "para": 17
+     }
+    }
+   ]
+  },
+  {
+   "id": "T3",
+   "status": "contradicts",
+   "materiality": "high",
+   "evidence": [
+    {
+     "doc": "em-hys",
+     "para": 27,
+     "quote": "start phasing Harborview out of Portland metro in stages"
+    },
+    {
+     "doc": "em-hys",
+     "para": 42,
+     "quote": "I've gotten the green light to significantly increase your allocation for the fall."
+    }
+   ],
+   "analysis": "The same email recommends phasing Harborview out, and two weeks later Holcomb told Yee the increase was approved. That is a plan being executed, not brainstorming.",
+   "questions": [
+    {
+     "type": "lock-in",
+     "text": "As of August 22, 2022, no decision had been made to shift Portland business from Harborview to Cascade. Correct?"
+    },
+    {
+     "type": "confront",
+     "text": "On September 6 you told Mr. Yee, \"I've gotten the green light to significantly increase your allocation for the fall.\" Who gave you the green light?",
+     "exhibit": {
+      "doc": "em-hys",
+      "para": 42
+     }
+    }
+   ]
+  },
+  {
+   "id": "T4",
+   "status": "contradicts",
+   "materiality": "high",
+   "evidence": [
+    {
+     "doc": "em-hys",
+     "para": 54,
+     "quote": "I told him supply chain issues. He's not buying it entirely but that's the line I went with"
+    },
+    {
+     "doc": "em-hys",
+     "para": 56,
+     "quote": "But if he starts digging and finds out those issues were resolved months ago, it falls apart."
+    }
+   ],
+   "analysis": "His own email calls supply chain \"the line I went with\" and says the examples he might cite were resolved months earlier. That is the strongest impeachment point in the record.",
+   "questions": [
+    {
+     "type": "lock-in",
+     "text": "When you told Mr. Beckett about supply chain issues, you believed that was the true reason shipments were down?"
+    },
+    {
+     "type": "lock-in",
+     "text": "You cannot name a single supplier delay, shortage, or stoppage from that period, correct?"
+    },
+    {
+     "type": "confront",
+     "text": "You wrote to Ms. Stanton that supply chain was \"the line I went with,\" and that if Mr. Beckett learned those issues \"were resolved months ago, it falls apart.\" What falls apart?",
+     "exhibit": {
+      "doc": "em-hys",
+      "para": 56
+     }
+    }
+   ]
+  },
+  {
+   "id": "T5",
+   "status": "contradicts",
+   "materiality": "high",
+   "evidence": [
+    {
+     "doc": "em-hys",
+     "para": 47,
+     "quote": "we may need to adjust shipments to some of our other channels to accommodate your increased allocation"
+    },
+    {
+     "doc": "em-hys",
+     "para": 45,
+     "quote": "roughly $630K for the three-month period"
+    }
+   ],
+   "analysis": "Holcomb told Cascade that other channels' shipments would be cut to fund Cascade's allocation. The shortfall he blamed on market conditions tracks Greenleaf's own reallocation.",
+   "questions": [
+    {
+     "type": "lock-in",
+     "text": "Greenleaf's own allocation decisions played no part in Harborview's Year 3 shortfall?"
+    },
+    {
+     "type": "confront",
+     "text": "On September 6 you told Mr. Yee, \"we may need to adjust shipments to some of our other channels to accommodate your increased allocation.\" Which channels were adjusted?",
+     "exhibit": {
+      "doc": "em-hys",
+      "para": 47
+     }
+    }
+   ]
+  },
+  {
+   "id": "T6",
+   "status": "qualifies",
+   "materiality": "high",
+   "evidence": [
+    {
+     "doc": "em-hys",
+     "para": 28,
+     "quote": "I know we need to figure out the contract situation with Harborview. The EDA has specific terms around the territory."
+    },
+    {
+     "doc": "eda",
+     "para": 35,
+     "quote": "Greenleaf shall not, directly or through any third party, appoint any other distributor"
+    }
+   ],
+   "analysis": "Whether a notice duty existed is a legal question, but his email shows he knew the territory terms were a problem at the time he chose not to tell Harborview.",
+   "questions": [
+    {
+     "type": "lock-in",
+     "text": "In August 2022 you did not think the Cascade shipments raised any issue under the EDA?"
+    },
+    {
+     "type": "confront",
+     "text": "You wrote, \"I know we need to figure out the contract situation with Harborview. The EDA has specific terms around the territory.\" What contract situation did you mean?",
+     "exhibit": {
+      "doc": "em-hys",
+      "para": 28
+     }
+    }
+   ]
+  },
+  {
+   "id": "T7",
+   "status": "qualifies",
+   "materiality": "medium",
+   "evidence": [
+    {
+     "doc": "em-hys",
+     "para": 36,
+     "quote": "If Harborview finds out about Cascade before we're ready to have that conversation, I want to make sure we have leverage."
+    }
+   ],
+   "analysis": "The record shows planning for Harborview finding out, not guidance that the shipments were permitted. If the \"internal guidance\" was advice of counsel, relying on it may put that advice at issue; raise with the team before this line is pursued.",
+   "questions": [
+    {
+     "type": "lock-in",
+     "text": "Identify the internal guidance you relied on: who gave it, when, and in what form."
+    },
+    {
+     "type": "confront",
+     "text": "Ms. Stanton wrote to you about making sure Greenleaf had \"leverage\" if Harborview found out about Cascade. Was that the guidance?",
+     "exhibit": {
+      "doc": "em-hys",
+      "para": 36
+     }
+    }
+   ]
+  },
+  {
+   "id": "T8",
+   "status": "qualifies",
+   "materiality": "high",
+   "evidence": [
+    {
+     "doc": "em-hys",
+     "para": 38,
+     "quote": "On Lisa Fong — hold off for now. Don't loop her in on the Cascade routing. I'll handle the QA side separately."
+    },
+    {
+     "doc": "em-hys",
+     "para": 29,
+     "quote": "should I loop in Lisa Fong on the shipment routing?"
+    }
+   ],
+   "analysis": "He was not on the September 14 email, but in August Stanton told him she would \"handle the QA side separately.\" That undercuts a claim of no prior awareness of QA steps aimed at Harborview.",
+   "questions": [
+    {
+     "type": "lock-in",
+     "text": "Before October 2022 nobody told you anything about QA measures relating to Harborview?"
+    },
+    {
+     "type": "confront",
+     "text": "On August 23 Ms. Stanton told you, \"I'll handle the QA side separately.\" What did you understand the QA side to be?",
+     "exhibit": {
+      "doc": "em-hys",
+      "para": 38
+     }
+    }
+   ]
+  },
+  {
+   "id": "T9",
+   "status": "qualifies",
+   "materiality": "medium",
+   "evidence": [
+    {
+     "doc": "em-sfq",
+     "para": 3,
+     "quote": "same criteria applied to Cascade lots would have flagged at least 2, but those weren't in the enhanced screening protocol."
+    }
+   ],
+   "analysis": "The record confirms the disparity existed, but nothing provided shows Holcomb received the rejection data. This supports the selective-enforcement theory without impeaching him directly.",
+   "questions": [
+    {
+     "type": "lock-in",
+     "text": "No one at Greenleaf ever reported rejection rates to you broken out by distributor?"
+    },
+    {
+     "type": "confront",
+     "text": "Were you aware that Harborview lots were screened under an enhanced protocol that Cascade lots were not?",
+     "exhibit": {
+      "doc": "em-sfq",
+      "para": 3
+     }
+    }
+   ]
+  },
+  {
+   "id": "T10",
+   "status": "qualifies",
+   "materiality": "high",
+   "evidence": [
+    {
+     "doc": "em-hys",
+     "para": 58,
+     "quote": "If they miss the minimum, that gives us a basis to act on the contract."
+    },
+    {
+     "doc": "em-si",
+     "para": 2,
+     "quote": "They're not hitting minimums — let's use that as the basis."
+    }
+   ],
+   "analysis": "Holcomb framed the shortfall as a basis to act weeks before the notice, which suggests the minimum was the vehicle rather than the reason. The Stanton to Ivers email says the same thing more directly, but it is privilege-logged.",
+   "questions": [
+    {
+     "type": "lock-in",
+     "text": "The breach notice was sent because Harborview had in fact failed to perform, and for no other reason?"
+    },
+    {
+     "type": "confront",
+     "text": "On December 1 you wrote, \"If they miss the minimum, that gives us a basis to act on the contract.\" A basis to do what?",
+     "exhibit": {
+      "doc": "em-hys",
+      "para": 58
+     }
+    },
+    {
+     "type": "confront",
+     "text": "Put the January 3, 2023 email: \"They're not hitting minimums — let's use that as the basis.\"",
+     "exhibit": {
+      "doc": "em-si",
+      "para": 2
+     }
+    }
+   ]
+  },
+  {
+   "id": "T11",
+   "status": "qualifies",
+   "materiality": "high",
+   "evidence": [
+    {
+     "doc": "em-hys",
+     "para": 59,
+     "quote": "the December 15 deadline for the 90-day non-renewal notice is coming up fast. That's two weeks from today."
+    }
+   ],
+   "analysis": "Holcomb raised the non-renewal deadline himself two weeks before it passed. Use the email to refresh recollection and pin down whether a notice was ever sent.",
+   "questions": [
+    {
+     "type": "lock-in",
+     "text": "You were not involved in decisions about whether to send a non-renewal notice?"
+    },
+    {
+     "type": "confront",
+     "text": "On December 1 you flagged that the non-renewal deadline was two weeks away and asked whether to send it as a \"belt-and-suspenders move.\" What was decided?",
+     "exhibit": {
+      "doc": "em-hys",
+      "para": 59
+     }
+    }
+   ]
+  },
+  {
+   "id": "T12",
+   "status": "consistent",
+   "materiality": "medium",
+   "evidence": [
+    {
+     "doc": "em-hys",
+     "para": 26,
+     "quote": "Total wholesale value shipped through Cascade from June through the end of this month will be approximately $420K."
+    },
+    {
+     "doc": "em-hys",
+     "para": 45,
+     "quote": "roughly $630K for the three-month period"
+    }
+   ],
+   "analysis": "His own emails match the first two quarters of the $1.9 million figure. Lock this admission in; it anchors the causation arithmetic.",
+   "questions": []
+  },
+  {
+   "id": "T13",
+   "status": "no_support",
+   "materiality": "low",
+   "evidence": [],
+   "analysis": "None of the retrieved passages bear on deletion. The gap between the last Cascade shipment and the March 2024 hold is a preservation question for the custodian, not an impeachment point.",
+   "questions": []
+  }
+ ],
+ "log": [
+  {
+   "step": "Record loaded",
+   "detail": "15 documents; testimony from the Holcomb deposition summary; evidence pool limited to primary documents"
+  },
+  {
+   "step": "Testimony extracted",
+   "detail": "13 sworn assertions, attorney commentary paragraphs excluded"
+  },
+  {
+   "step": "Passages retrieved",
+   "detail": "Top 6 primary-document passages per assertion, by keyword relevance (BM25)"
+  },
+  {
+   "step": "Compared",
+   "detail": "Each assertion classified against its retrieved passages only"
+  }
+ ]
+}

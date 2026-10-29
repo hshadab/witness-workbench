@@ -1,0 +1,697 @@
+<title>Witness Workbench</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* Layout: working tool. A header band with the matter and run controls, a
+   pipeline strip that counts each stage, then tabs. The matrix sits left with
+   a sticky source viewer right; below 980px the viewer becomes a sheet. */
+:root{
+  --bg:#F3F4F1; --surface:#FFFFFF; --sunk:#ECEEEA; --ink:#17202B; --muted:#58626F; --faint:#8A929C; --rule:#D7DBD4;
+  --accent:#1E4C78; --accent-ink:#FFFFFF; --sticker:#F2CF3D; --hl:#FFF1A3;
+  --bad:#B3261E; --bad-bg:#FBE8E6; --warn:#9A5B06; --warn-bg:#FCF0D9; --good:#2B6A3A; --good-bg:#E4F1E6; --neutral:#5F6873; --neutral-bg:#ECEEF0;
+  --priv:#6B3FA0; --priv-bg:#F0E8FA;
+  --display:"IBM Plex Serif", Georgia, "Times New Roman", serif;
+  --body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#10151C; --surface:#171E27; --sunk:#1D2530; --ink:#E5E8EC; --muted:#A0A9B4; --faint:#76808C; --rule:#2A3440;
+  --accent:#8FB9E4; --accent-ink:#0F1720; --sticker:#E0BE33; --hl:#4D4310;
+  --bad:#F08A80; --bad-bg:#3A1C1A; --warn:#E7B060; --warn-bg:#372A12; --good:#80C690; --good-bg:#183020; --neutral:#A3ABB5; --neutral-bg:#232C37;
+  --priv:#C3A2EE; --priv-bg:#2C2140; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#10151C; --surface:#171E27; --sunk:#1D2530; --ink:#E5E8EC; --muted:#A0A9B4; --faint:#76808C; --rule:#2A3440;
+  --accent:#8FB9E4; --accent-ink:#0F1720; --sticker:#E0BE33; --hl:#4D4310;
+  --bad:#F08A80; --bad-bg:#3A1C1A; --warn:#E7B060; --warn-bg:#372A12; --good:#80C690; --good-bg:#183020; --neutral:#A3ABB5; --neutral-bg:#232C37;
+  --priv:#C3A2EE; --priv-bg:#2C2140; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 var(--body)}
+.wrap{max-width:1360px;margin:0 auto;padding-block:20px 64px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{text-wrap:balance;margin:0}
+.mono{font-family:var(--mono)}
+
+/* header */
+.top{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;padding-bottom:16px;border-bottom:1px solid var(--rule)}
+.brand{display:flex;gap:14px;align-items:flex-start}
+.sticker{flex:none;width:46px;height:46px;border-radius:50%;background:var(--sticker);color:#2B2300;display:grid;place-items:center;font:600 11px/1.05 var(--mono);text-align:center;letter-spacing:.04em;transform:rotate(-8deg);box-shadow:0 1px 0 rgba(0,0,0,.15)}
+h1{font:600 26px/1.15 var(--display);letter-spacing:-.01em}
+.sub{color:var(--muted);margin-top:3px;max-width:62ch}
+.matter{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px 14px;font:12px/1.4 var(--mono);color:var(--muted)}
+.matter b{color:var(--ink);font-weight:500}
+.tag{display:inline-block;padding:1px 7px;border-radius:3px;background:var(--sunk);font:500 11px/1.6 var(--mono);color:var(--muted)}
+
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;justify-content:flex-start;padding:12px;background:var(--surface);border:1px solid var(--rule);border-radius:8px}
+.field{display:flex;flex-direction:column;gap:3px;min-width:0}
+.field label{font:500 10.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+select{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:7px 28px 7px 10px;max-width:300px}
+.btn{border:1px solid var(--rule);background:var(--surface);border-radius:6px;padding:7px 12px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.check{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);padding:6px 0}
+.notice{margin-top:12px;padding:10px 12px;border-radius:6px;background:var(--sunk);color:var(--muted);font-size:13px}
+.notice.err{background:var(--bad-bg);color:var(--bad)}
+
+/* pipeline */
+.pipe{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;margin:16px 0 4px;border:1px solid var(--rule);border-radius:8px;background:var(--surface);overflow:hidden}
+.stage{padding:11px 14px 12px;border-right:1px solid var(--rule);position:relative;min-width:0}
+.stage:last-child{border-right:0}
+.stage .k{font:500 10.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--faint);display:flex;gap:6px;align-items:center}
+.stage .v{font:600 20px/1.2 var(--display);margin-top:6px;font-variant-numeric:tabular-nums}
+.stage .d{font-size:12px;color:var(--muted);margin-top:2px}
+.stage .who{position:absolute;top:10px;right:12px;font:500 9.5px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:3px 5px;border-radius:3px}
+.who.ai{background:var(--accent);color:var(--accent-ink)}
+.who.code{background:var(--sunk);color:var(--muted)}
+.who.you{background:var(--sticker);color:#2B2300}
+.stage.active{background:var(--sunk)}
+.stage.active .k::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 1s infinite}
+.stage.done .k::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--good)}
+@keyframes pulse{50%{opacity:.25}}
+@media (prefers-reduced-motion: reduce){.stage.active .k::before{animation:none}}
+.progress{font:12px/1.4 var(--mono);color:var(--muted);min-height:18px;margin:6px 2px 0}
+
+/* tabs */
+.tabs{display:flex;gap:2px;margin-top:14px;border-bottom:1px solid var(--rule);overflow-x:auto}
+.tab{background:none;border:0;border-bottom:2px solid transparent;padding:9px 14px;cursor:pointer;color:var(--muted);font-weight:500;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab .n{font:500 11px var(--mono);margin-left:6px;padding:1px 6px;border-radius:9px;background:var(--sunk)}
+.tab .n.alert{background:var(--warn-bg);color:var(--warn)}
+
+.body{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:18px;margin-top:16px;align-items:start}
+.body.full{grid-template-columns:minmax(0,1fr)}
+@media (max-width:980px){.body{grid-template-columns:minmax(0,1fr)}}
+
+/* filters */
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;align-items:center}
+.chip{border:1px solid var(--rule);background:var(--surface);border-radius:999px;padding:4px 11px;cursor:pointer;font-size:12.5px;color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.legend{margin-left:auto;font-size:12px;color:var(--faint)}
+
+/* matrix rows */
+.rows{display:flex;flex-direction:column;gap:10px}
+.row{background:var(--surface);border:1px solid var(--rule);border-radius:8px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);min-width:0}
+.row.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.row.rejected{opacity:.55}
+@media (max-width:760px){.row{grid-template-columns:minmax(0,1fr)}}
+.cell{padding:13px 15px;min-width:0}
+.cell+.cell{border-left:1px solid var(--rule)}
+@media (max-width:760px){.cell+.cell{border-left:0;border-top:1px solid var(--rule)}}
+.rowhead{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;margin-bottom:7px}
+.rid{font:500 11px var(--mono);color:var(--faint)}
+.topic{font:600 14.5px/1.3 var(--display)}
+.side{font:500 10.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:6px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+blockquote{margin:0;font:400 14.5px/1.5 var(--display);color:var(--ink)}
+blockquote mark,.para mark{background:var(--hl);color:inherit;padding:0 1px;border-radius:2px}
+.claim{color:var(--muted);font-size:13px;margin-top:6px}
+.citebtn{display:inline-flex;align-items:center;gap:6px;margin-top:6px;background:none;border:0;padding:0;cursor:pointer;font:12px/1.4 var(--mono);color:var(--accent);text-align:left}
+.citebtn:hover{text-decoration:underline}
+.ev{padding:8px 0;border-top:1px dashed var(--rule)}
+.ev:first-of-type{border-top:0;padding-top:0}
+.ev.bad blockquote{text-decoration:line-through;text-decoration-color:var(--bad);color:var(--muted)}
+.ev.held blockquote{color:var(--muted)}
+.analysis{margin-top:8px;font-size:13px;color:var(--muted);font-style:italic}
+.analysis b{font-style:normal;font:500 10.5px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-right:6px}
+
+.pill{display:inline-flex;align-items:center;gap:5px;font:600 11px/1 var(--body);padding:4px 8px;border-radius:999px;white-space:nowrap}
+.st-contradicts{background:var(--bad-bg);color:var(--bad)}
+.st-qualifies{background:var(--warn-bg);color:var(--warn)}
+.st-consistent{background:var(--good-bg);color:var(--good)}
+.st-no_support,.st-missing{background:var(--neutral-bg);color:var(--neutral)}
+.mat{font:500 11px var(--mono);color:var(--faint)}
+.vb{display:inline-flex;align-items:center;gap:4px;font:500 11px/1 var(--mono);padding:3px 6px;border-radius:3px;white-space:nowrap}
+.vb::before{font-weight:700}
+.v-verified{background:var(--good-bg);color:var(--good)} .v-verified::before{content:"\2713"}
+.v-wrong_pin,.v-too_short,.v-outside_passages,.v-not_primary,.v-unverified_exhibit{background:var(--warn-bg);color:var(--warn)} .v-wrong_pin::before,.v-too_short::before,.v-outside_passages::before,.v-not_primary::before,.v-unverified_exhibit::before{content:"!"}
+.v-not_found,.v-bad_cite{background:var(--bad-bg);color:var(--bad)} .v-not_found::before,.v-bad_cite::before{content:"\2715"}
+.v-privileged{background:var(--priv-bg);color:var(--priv)} .v-privileged::before{content:"\25C6"}
+.planted{font:500 10px/1 var(--mono);color:var(--bad);border:1px solid currentColor;border-radius:3px;padding:2px 4px;margin-left:6px}
+
+.rowfoot{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-top:10px;padding-top:9px;border-top:1px solid var(--rule)}
+.review{display:flex;gap:6px}
+.rv{border:1px solid var(--rule);background:var(--surface);border-radius:5px;padding:4px 10px;cursor:pointer;font-size:12.5px}
+.rv[aria-pressed="true"].acc{background:var(--good);border-color:var(--good);color:var(--surface)}
+.rv[aria-pressed="true"].rej{background:var(--bad);border-color:var(--bad);color:var(--surface)}
+.rowcheck{font:500 11.5px var(--mono)}
+.rc-verified{color:var(--good)} .rc-partial{color:var(--warn)} .rc-held{color:var(--bad)}
+details.qs{margin-top:8px}
+details.qs summary{cursor:pointer;font-size:12.5px;color:var(--accent);font-weight:500}
+.qlist{margin:8px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px}
+.qlist li{display:grid;grid-template-columns:72px minmax(0,1fr);gap:8px;font-size:13px}
+.qt{font:500 10.5px/1.7 var(--mono);text-transform:uppercase;letter-spacing:.05em;color:var(--faint)}
+.qhold{color:var(--priv);font:500 11px var(--mono)}
+
+/* source viewer */
+.viewer{position:sticky;top:max(12px, env(safe-area-inset-top, 0px));background:var(--surface);border:1px solid var(--rule);border-radius:8px;max-height:calc(100vh - 24px);display:flex;flex-direction:column;min-width:0}
+.vhead{padding:12px 14px;border-bottom:1px solid var(--rule)}
+.vhead .k{font:500 10.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.vhead h3{font:600 15px/1.3 var(--display);margin-top:5px}
+.vhead .meta{font:12px/1.4 var(--mono);color:var(--muted);margin-top:4px}
+.vhead select{margin-top:8px;max-width:100%;width:100%}
+.privbar{margin:10px 14px 0;padding:8px 10px;border-radius:6px;background:var(--priv-bg);color:var(--priv);font-size:12.5px}
+.vbody{overflow:auto;padding:6px 14px 14px;min-height:120px}
+.para{display:grid;grid-template-columns:38px minmax(0,1fr);gap:8px;padding:6px 0;font:400 13.5px/1.55 var(--display);border-bottom:1px dotted var(--rule)}
+.para .n{font:500 11px/1.9 var(--mono);color:var(--faint);text-align:right}
+.para.target{background:linear-gradient(90deg, var(--sunk), transparent 80%)}
+.para.target .n{color:var(--accent);font-weight:600}
+.vfoot{padding:8px 14px;border-top:1px solid var(--rule);display:flex;justify-content:space-between;gap:8px}
+@media (max-width:980px){
+  .viewer{position:fixed;left:0;right:0;bottom:0;top:auto;max-height:72vh;border-radius:12px 12px 0 0;z-index:20;box-shadow:0 -10px 30px rgba(0,0,0,.25);
+    padding-bottom:env(safe-area-inset-bottom, 0px);padding-left:env(safe-area-inset-left, 0px);padding-right:env(safe-area-inset-right, 0px)}
+  .viewer[data-open="false"]{display:none}
+}
+
+/* tables */
+.tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--rule);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{font:500 10.5px/1.2 var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--faint);text-align:left;padding:10px 12px;border-bottom:1px solid var(--rule);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--rule);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td .q{font-family:var(--display)}
+
+/* outline */
+.paper{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:22px 26px;max-width:860px}
+.paper h2{font:600 19px/1.3 var(--display)}
+.paper .lede{color:var(--muted);font-size:13px;margin:6px 0 16px}
+.oitem{padding:14px 0;border-top:1px solid var(--rule)}
+.oitem h3{font:600 15px/1.3 var(--display)}
+.oitem .t{font-size:13px;color:var(--muted);margin-top:4px}
+.oitem ol{margin:10px 0 0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+.oitem li{font:400 14px/1.5 var(--display)}
+.oitem li .x{font:12px var(--mono);color:var(--accent);margin-left:4px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+
+/* prose */
+.prose{max-width:760px;background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:22px 26px}
+.prose h2{font:600 19px/1.3 var(--display);margin:18px 0 6px}
+.prose h2:first-child{margin-top:0}
+.prose p,.prose li{max-width:68ch}
+.prose ul{padding-left:20px}
+.kv{display:grid;grid-template-columns:150px minmax(0,1fr);gap:6px 14px;font-size:13px;margin:8px 0 16px}
+.kv dt{font:500 11px/1.8 var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--faint)}
+.kv dd{margin:0}
+.log{list-style:none;margin:0;padding:0}
+.log li{display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px;padding:8px 0;border-top:1px solid var(--rule);font-size:13px}
+.log li:first-child{border-top:0}
+.log .s{font-weight:600}
+.empty{padding:28px;text-align:center;color:var(--muted);background:var(--surface);border:1px dashed var(--rule);border-radius:8px}
+.foot{margin-top:28px;font-size:12px;color:var(--faint);max-width:90ch}
+@media (max-width:640px){
+  .top{grid-template-columns:minmax(0,1fr)}
+  .pipe{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stage:nth-child(2n){border-right:0}
+  .stage{border-bottom:1px solid var(--rule)}
+  .kv,.log li{grid-template-columns:minmax(0,1fr)}
+  .paper,.prose{padding:16px}
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="brand">
+        <div class="sticker" aria-hidden="true">EX<br>A</div>
+        <div>
+          <h1>Witness Workbench</h1>
+          <div class="sub">Deposition prep from the record: what the witness swore, what the documents say, and questions tied to the exhibit. Every quote is checked against its source before a lawyer sees it.</div>
+        </div>
+      </div>
+      <div class="matter" id="matter"></div>
+    </div>
+    <div class="controls">
+      <div class="field"><label for="witness">Witness</label>
+        <select id="witness"><option value="dep-holcomb">Derek Holcomb, VP Sales</option><option value="dep-fong">Lisa Fong, Dir. Quality Assurance</option></select></div>
+      <div class="field"><label for="lens">Lens</label>
+        <select id="lens"><option value="examine">Examining (adverse)</option><option value="defend">Preparing our witness</option></select></div>
+      <div class="field"><label for="runsel">Run</label><select id="runsel"></select></div>
+      <button class="btn primary" id="go" type="button">Run live with Claude</button>
+      <button class="btn" id="stop" type="button" hidden>Stop</button>
+      <label class="check" for="plant"><input type="checkbox" id="plant"> Plant a fabricated quote</label>
+    </div>
+  </header>
+  <div id="notice" class="notice" hidden></div>
+
+  <section class="pipe" id="pipe" aria-label="Pipeline"></section>
+  <div class="progress" id="progress" aria-live="polite"></div>
+
+  <nav class="tabs" role="tablist" id="tabs">
+    <button class="tab" role="tab" data-tab="matrix" aria-selected="true">Contradiction matrix</button>
+    <button class="tab" role="tab" data-tab="queue">Review queue <span class="n" id="nq">0</span></button>
+    <button class="tab" role="tab" data-tab="outline">Deposition outline <span class="n" id="no">0</span></button>
+    <button class="tab" role="tab" data-tab="audit">Audit trail</button>
+    <button class="tab" role="tab" data-tab="how">How it works</button>
+  </nav>
+
+  <div class="body" id="body">
+    <main id="main" style="min-width:0"></main>
+    <aside class="viewer" id="viewer" data-open="false" aria-label="Source document">
+      <div class="vhead">
+        <div class="k">Source</div>
+        <h3 id="vtitle">Select a citation</h3>
+        <div class="meta" id="vmeta">Click any pin cite to open the document at that paragraph.</div>
+        <select id="vdoc" aria-label="Browse a record document"></select>
+      </div>
+      <div id="vpriv"></div>
+      <div class="vbody" id="vbody"></div>
+      <div class="vfoot"><button class="btn" id="vall" type="button">Show whole document</button><button class="btn" id="vclose" type="button">Close</button></div>
+    </aside>
+  </div>
+
+  <p class="foot">Record: a public, fictional case from Harvey's open-source Legal Agent Benchmark (task <span class="mono">build-litigation-case-timeline</span>), used unmodified. Prototype; not client data and not legal advice. Built by Houman Shadab.</p>
+</div>
+
+<script type="application/json" id="record-data">__RECORD__</script>
+<script type="application/json" id="sample-data">__SAMPLE__</script>
+<script>
+__CORE__
+</script>
+<script>
+(function(){
+"use strict";
+var RECORD = JSON.parse(document.getElementById("record-data").textContent);
+var SAMPLE = JSON.parse(document.getElementById("sample-data").textContent);
+var CHUNKS = WW.chunkRecord(RECORD);
+var INDEX = WW.buildIndex(WW.evidencePool(RECORD));
+var WITNESS_NAME = {"dep-holcomb":"Derek Holcomb","dep-fong":"Lisa Fong"};
+var KIND_LABEL = {verified:"Verified", wrong_pin:"Wrong pin cite", not_found:"Not in record", too_short:"Too short to verify",
+  bad_cite:"Cite does not exist", outside_passages:"Not from retrieved excerpts", not_primary:"Not a primary document",
+  privileged:"Privileged: held", unverified_exhibit:"Exhibit not verified"};
+var KIND_ACTION = {wrong_pin:"The words exist elsewhere in this document. Correct the pin cite before use.",
+  not_found:"These words are not in the document. Discard; never cite.", too_short:"Too short to prove anything. Expand the quote from the source.",
+  bad_cite:"The cited document or paragraph does not exist. Discard.", outside_passages:"Claude cited a paragraph it was not given. Verify independently before use.",
+  not_primary:"Evidence must come from a primary document, not a summary. Find the underlying document.",
+  privileged:"Privilege-logged document (produced, clawback under consideration). An attorney decides before any use."};
+var STATUS_LABEL = {contradicts:"Contradicts", qualifies:"Qualifies", consistent:"Consistent", no_support:"No support found", missing:"Not analyzed"};
+
+var state = { runs:[SAMPLE], run:SAMPLE, result:null, tab:"matrix", filter:"all", sel:null, viewer:{doc:null,para:null,quote:null,all:false},
+  review:{}, plant:false, busy:false, ctl:null, live:{steps:{}, note:""}, cap:{sample:null, db:null, downloads:null}, onlyAccepted:true };
+
+// ---------- helpers
+function h(tag, attrs){ var el=document.createElement(tag); if(attrs) for(var k in attrs){ var v=attrs[k]; if(v==null||v===false) continue;
+  if(k==="class") el.className=v; else if(k==="text") el.textContent=v; else if(k.slice(0,2)==="on") el.addEventListener(k.slice(2),v); else el.setAttribute(k, v===true?"":v); }
+  for(var i=2;i<arguments.length;i++){ var c=arguments[i]; if(c==null||c===false) continue; if(Array.isArray(c)) c.forEach(function(x){ if(x!=null&&x!==false) el.append(x.nodeType?x:document.createTextNode(String(x))); }); else el.append(c.nodeType?c:document.createTextNode(String(c))); }
+  return el; }
+function $(id){ return document.getElementById(id); }
+function store(k,v){ try{ if(v===undefined) return JSON.parse(localStorage.getItem(k)||"null"); localStorage.setItem(k, JSON.stringify(v)); }catch(e){ return null; } }
+function docOf(id){ return WW.docById(RECORD,id); }
+
+// Highlight a quote inside original text, tolerant of punctuation and dash styles.
+function highlight(text, quote){
+  var frag=document.createDocumentFragment();
+  if(!quote){ frag.append(text); return frag; }
+  var parts=String(quote).split(/\s*(?:\.\.\.|…)\s*/).filter(Boolean), ranges=[];
+  parts.forEach(function(p){
+    var words=p.match(/[A-Za-z0-9$%]+/g); if(!words||words.length<2) return;
+    var re=new RegExp(words.map(function(w){return w.replace(/[$]/g,"\\$");}).join("[\\W_]+"),"i");
+    var m=re.exec(text); if(m) ranges.push([m.index, m.index+m[0].length]);
+  });
+  ranges.sort(function(a,b){return a[0]-b[0];});
+  var at=0; ranges.forEach(function(r){ if(r[0]<at) return; frag.append(text.slice(at,r[0])); frag.append(h("mark",null,text.slice(r[0],r[1]))); at=r[1]; });
+  frag.append(text.slice(at)); return frag;
+}
+
+// ---------- matter strip, run list
+function renderMatter(){
+  var m=RECORD.matter;
+  $("matter").replaceChildren(h("span",null,h("b",null,m.caption)), h("span",null,m.court+" · "+m.number), h("span",null,"Client: "+m.client), h("span",{class:"tag"},"Public benchmark record · fictional"));
+}
+function renderRunSelect(){
+  var sel=$("runsel"); sel.replaceChildren();
+  state.runs.forEach(function(r,i){ sel.append(h("option",{value:String(i)}, r.label || (WITNESS_NAME[r.witness]+" · "+(r.createdAt||"").slice(0,16).replace("T"," ")))); });
+  sel.value=String(state.runs.indexOf(state.run));
+}
+
+// ---------- assessment + pipeline
+function recompute(){
+  state.result = WW.assess(RECORD, state.run, {inject: state.plant});
+  state.review = store("ww:review:"+state.run.id) || {};
+}
+function retrievalStats(run){
+  if(!run.retrievalRecall) return null; return run.retrievalRecall;
+}
+function renderPipe(){
+  var r=state.result, m=r.metrics, run=state.run, s=state.live.steps;
+  var accepted=Object.keys(state.review).filter(function(k){return state.review[k]==="accept";}).length;
+  var excerpts=run.selectedCount!=null?run.selectedCount:null;
+  var rr=retrievalStats(run);
+  var stages=[
+    {k:"Record", who:"code", v:RECORD.docs.length+" docs", d:CHUNKS.length+" excerpts, chunked by email and section", key:"record"},
+    {k:"Testimony", who:"ai", v:m.items+" assertions", d:"from "+(docOf(run.witness)||{}).short, key:"extract"},
+    {k:"Search", who:"code", v:(excerpts!=null?excerpts:"0")+" excerpts", d: rr ? "found "+rr.hit+" of "+rr.total+" cited passages" : "BM25 over primary documents", key:"search"},
+    {k:"Compare", who:"ai", v:m.findings+" findings", d:"contradicts or qualifies", key:"compare"},
+    {k:"Check", who:"code", v:m.verified+"/"+m.quotes, d:"quotes verified · "+m.rejected+" rejected · "+m.held+" held", key:"check"},
+    {k:"Review", who:"you", v:accepted+" accepted", d:"of "+m.items+" rows", key:"review"}
+  ];
+  $("pipe").replaceChildren.apply($("pipe"), stages.map(function(st){
+    var cls="stage"+(s[st.key]==="active"?" active":s[st.key]==="done"?" done":"");
+    return h("div",{class:cls}, h("span",{class:"who "+st.who, title: st.who==="ai"?"Claude":st.who==="code"?"Deterministic code":"Attorney"}, st.who==="ai"?"Claude":st.who==="code"?"Code":"Lawyer"),
+      h("div",{class:"k"},st.k), h("div",{class:"v"},state.busy&&s[st.key]!=="done"&&st.key!=="record"?"…":st.v), h("div",{class:"d"},st.d));
+  }));
+  $("nq").textContent=String(r.exceptions.length); $("nq").className="n"+(r.exceptions.length?" alert":"");
+  $("no").textContent=String(outlineRows().length);
+}
+
+// ---------- matrix
+function citeBtn(doc, para, quote){
+  return h("button",{class:"citebtn",type:"button",onclick:function(){ openViewer(doc,para,quote); }}, "¶ "+WW.cite(RECORD,doc,para));
+}
+function vbadge(kind, foundPara){ var t=KIND_LABEL[kind]||kind; if(kind==="wrong_pin"&&foundPara) t+=" (found at ¶"+foundPara+")"; return h("span",{class:"vb v-"+kind},t); }
+function setReview(id, val){
+  state.review[id] = state.review[id]===val ? undefined : val; if(!state.review[id]) delete state.review[id];
+  store("ww:review:"+state.run.id, state.review); render();
+}
+function rowEl(r){
+  var rev=state.review[r.id];
+  var testi=h("div",{class:"cell"},
+    h("div",{class:"rowhead"}, h("span",{class:"rid"},r.id), h("span",{class:"topic"},r.topic)),
+    h("div",{class:"side"}, h("span",null,"Sworn testimony"), vbadge(r.testimony.status, r.testimony.foundPara)),
+    h("blockquote",null,"“"+r.quote+"”"),
+    citeBtn(state.run.witness, r.para, r.quote),
+    h("div",{class:"claim"}, r.claim));
+  var evs=r.evidence.map(function(e){
+    var cls="ev"+((e.check==="verified")?"":(e.check==="privileged"?" held":" bad"));
+    return h("div",{class:cls},
+      h("div",{class:"side"}, h("span",null,"Record", e.injected?h("span",{class:"planted"},"PLANTED TEST"):null), vbadge(e.check, e.foundPara)),
+      h("blockquote",null,"“"+e.quote+"”"),
+      citeBtn(e.doc, e.foundPara||e.para, e.quote));
+  });
+  var qs=r.questions;
+  var qtag={ "lock-in":"Lock in", confront:"Confront", expected:"Expect", prep:"Prep" };
+  var right=h("div",{class:"cell"},
+    h("div",{class:"rowhead"}, h("span",{class:"pill st-"+r.status}, STATUS_LABEL[r.status]||r.status), r.materiality?h("span",{class:"mat"},r.materiality+" materiality"):null),
+    evs.length?evs:h("div",{class:"claim"},"No record passage bears on this assertion."),
+    r.analysis?h("div",{class:"analysis"},h("b",null,"Analysis"),r.analysis):null,
+    qs.length?h("details",{class:"qs"}, h("summary",null,"Questions ("+qs.length+")"),
+      h("ul",{class:"qlist"}, qs.map(function(q){
+        return h("li",null,h("span",{class:"qt"},qtag[q.type]||q.type), h("div",null, q.text,
+          q.exhibit?h("div",null, citeBtn(q.exhibit.doc,q.exhibit.para,null)):null,
+          q.hold?h("div",{class:"qhold"}, q.hold==="privileged"?"◆ Held: relies on a privilege-logged document":"! Held: exhibit not verified"):null));
+      }))):null,
+    h("div",{class:"rowfoot"},
+      h("span",{class:"rowcheck rc-"+r.check}, r.check==="verified"?"✓ All checks passed":r.check==="partial"?"! Usable, with items held":"✕ Held for review"),
+      h("div",{class:"review"},
+        h("button",{class:"rv acc",type:"button","aria-pressed":rev==="accept"?"true":"false",onclick:function(){setReview(r.id,"accept");}},"Accept"),
+        h("button",{class:"rv rej",type:"button","aria-pressed":rev==="reject"?"true":"false",onclick:function(){setReview(r.id,"reject");}},"Reject"))));
+  var el=h("article",{class:"row"+(state.sel===r.id?" sel":"")+(rev==="reject"?" rejected":""),id:"row-"+r.id}, testi, right);
+  return el;
+}
+function renderMatrix(main){
+  var rows=state.result.rows;
+  var f=state.filter;
+  var shown=rows.filter(function(r){ if(f==="findings") return r.status==="contradicts"||r.status==="qualifies";
+    if(f==="contradicts") return r.status==="contradicts"; if(f==="held") return r.check!=="verified"; return true; });
+  var order={contradicts:0,qualifies:1,consistent:2,no_support:3,missing:4}, mo={high:0,medium:1,low:2};
+  shown.sort(function(a,b){ return (order[a.status]-order[b.status]) || ((mo[a.materiality]||3)-(mo[b.materiality]||3)) || (parseInt(a.id.slice(1))-parseInt(b.id.slice(1))); });
+  var chips=[["all","All "+rows.length],["findings","Findings"],["contradicts","Contradictions"],["held","Needs attention"]].map(function(c){
+    return h("button",{class:"chip",type:"button","aria-pressed":state.filter===c[0]?"true":"false",onclick:function(){state.filter=c[0];render();}},c[1]); });
+  main.replaceChildren(
+    h("div",{class:"filters"}, chips, h("span",{class:"legend"}, "Claude proposes. The checker verifies every quote. You decide.")),
+    shown.length?h("div",{class:"rows"}, shown.map(rowEl)):h("div",{class:"empty"},"Nothing matches this filter."));
+}
+
+// ---------- review queue
+function renderQueue(main){
+  var ex=state.result.exceptions;
+  var intro=h("p",{class:"claim",style:"margin:0 0 12px"},"Everything the checker would not pass. Nothing here reaches the outline until an attorney resolves it.");
+  if(!ex.length){ main.replaceChildren(intro, h("div",{class:"empty"},"No exceptions. Every quote matched its cited source, and nothing relies on a privileged document. Tick “Plant a fabricated quote” to watch the checker catch one.")); return; }
+  main.replaceChildren(intro, h("div",{class:"tablewrap"}, h("table",null,
+    h("thead",null,h("tr",null,h("th",null,"Row"),h("th",null,"Issue"),h("th",null,"Quote"),h("th",null,"Cited"),h("th",null,"What to do"))),
+    h("tbody",null, ex.map(function(e){
+      return h("tr",null, h("td",{class:"mono"},e.row+(e.side==="testimony"?" · testimony":"")),
+        h("td",null, h("div",{style:"display:flex;flex-wrap:wrap;gap:6px;align-items:center"}, vbadge(e.kind, e.foundPara), e.injected?h("span",{class:"planted",style:"margin-left:0"},"PLANTED TEST"):null)),
+        h("td",{class:"q"},"“"+e.quote+"”"),
+        h("td",null, citeBtn(e.doc, e.para, e.quote)),
+        h("td",null, KIND_ACTION[e.kind]||""));
+    })))));
+}
+
+// ---------- outline
+function outlineRows(){
+  if(!state.result) return [];
+  return state.result.rows.filter(function(r){
+    var ok=(r.status==="contradicts"||r.status==="qualifies"||r.status==="consistent") && r.testimony.status==="verified" && r.check!=="held";
+    if(!ok) return false;
+    if(state.review[r.id]==="reject") return false;
+    return state.onlyAccepted ? state.review[r.id]==="accept" : true;
+  });
+}
+function outlineMarkdown(){
+  var run=state.run, lens=run.lens==="defend"?"Witness preparation":"Examination outline";
+  var lines=["# "+lens+": "+WITNESS_NAME[run.witness], "", RECORD.matter.caption+", "+RECORD.matter.number, "Draft for attorney review. Every quote below matched its cited source; items relying on privilege-logged documents are withheld.", ""];
+  outlineRows().forEach(function(r,i){
+    lines.push("## "+(i+1)+". "+r.topic, "", "Testimony: “"+r.quote+"” ("+WW.cite(RECORD,run.witness,r.para)+")", "");
+    r.questions.filter(function(q){return !q.hold;}).forEach(function(q,j){
+      lines.push((j+1)+". "+q.text+(q.exhibit?" ["+WW.cite(RECORD,q.exhibit.doc,q.exhibit.para)+"]":""));
+    });
+    if(!r.questions.length) lines.push("Admission to lock in. No confrontation needed.");
+    lines.push("");
+  });
+  return lines.join("\n");
+}
+function renderOutline(main){
+  var rows=outlineRows(), run=state.run;
+  var toggle=h("label",{class:"check",for:"onlyacc"}, h("input",{type:"checkbox",id:"onlyacc",checked:state.onlyAccepted?true:null,onchange:function(e){state.onlyAccepted=e.target.checked;render();}})," Accepted rows only");
+  var copyBtn=h("button",{class:"btn",type:"button",onclick:function(ev){ var md=outlineMarkdown(), b=ev.currentTarget;
+    try{ navigator.clipboard.writeText(md).then(function(){b.textContent="Copied";setTimeout(function(){b.textContent="Copy as text";},1500);},function(){fallbackSelect(md);}); }catch(e){ fallbackSelect(md); } }},"Copy as text");
+  var dl=state.cap.downloads?h("button",{class:"btn",type:"button",onclick:function(){
+    state.cap.downloads.save({filename:"outline-"+WITNESS_NAME[run.witness].split(" ").pop().toLowerCase()+".md", data:outlineMarkdown()}).catch(function(){}); }},"Download .md"):null;
+  var paper=h("div",{class:"paper"},
+    h("h2",null,(run.lens==="defend"?"Witness preparation: ":"Examination outline: ")+WITNESS_NAME[run.witness]),
+    h("div",{class:"lede"}, RECORD.matter.caption+" · Draft for attorney review. Only rows whose testimony and exhibits passed the checker appear; questions relying on privilege-logged documents are withheld."),
+    rows.length? rows.map(function(r,i){
+      var qs=r.questions.filter(function(q){return !q.hold;});
+      return h("div",{class:"oitem"},
+        h("h3",null,(i+1)+". "+r.topic),
+        h("div",{class:"t"},"Testimony: “"+r.quote+"” · "+WW.cite(RECORD,run.witness,r.para)),
+        qs.length?h("ol",null, qs.map(function(q){ return h("li",null,q.text, q.exhibit?h("span",{class:"x"},"["+WW.cite(RECORD,q.exhibit.doc,q.exhibit.para)+"]"):null); }))
+          :h("div",{class:"t"},"Admission to lock in. No confrontation needed."));
+    }) : h("div",{class:"empty"}, state.onlyAccepted?"Accept rows in the matrix to build the outline, or untick “Accepted rows only” to preview every verified row.":"No verified rows yet."));
+  main.replaceChildren(h("div",{class:"bar"}, toggle, copyBtn, dl), paper);
+}
+function fallbackSelect(text){
+  var ta=h("textarea",{style:"width:100%;height:200px;margin-top:10px"}); ta.value=text; $("main").append(ta); ta.focus(); ta.select();
+}
+
+// ---------- audit
+function renderAudit(main){
+  var run=state.run, m=state.result.metrics;
+  var kv=h("dl",{class:"kv"},
+    h("dt",null,"Run"),h("dd",null,run.label||run.id),
+    h("dt",null,"Origin"),h("dd",null,run.origin||""),
+    h("dt",null,"Witness"),h("dd",null,WITNESS_NAME[run.witness]+" · testimony from "+docOf(run.witness).title),
+    h("dt",null,"Lens"),h("dd",null,(WW.LENS[run.lens]||WW.LENS.examine).label),
+    h("dt",null,"Created"),h("dd",{class:"mono"},run.createdAt||""),
+    h("dt",null,"Model"),h("dd",null,run.tier||""),
+    h("dt",null,"Checker"),h("dd",null,m.verified+" of "+m.quotes+" quotes verified; "+m.rejected+" rejected; "+m.held+" held for privilege"+(state.plant?" (includes 1 planted test quote)":"")));
+  var steps=(run.log||[]).map(function(l){ return h("li",null,h("div",null,h("div",{class:"s"},l.step), l.t?h("div",{class:"mono",style:"font-size:11px;color:var(--faint)"},l.t):null), h("div",null,l.detail)); });
+  var ret=null;
+  if(run.retrievalLog){
+    ret=h("div",{class:"tablewrap",style:"margin-top:10px"}, h("table",null,
+      h("thead",null,h("tr",null,h("th",null,"Row"),h("th",null,"Search"),h("th",null,"Excerpts added"))),
+      h("tbody",null, [].concat.apply([], Object.keys(run.retrievalLog).map(function(id){
+        return run.retrievalLog[id].map(function(q,i){ return h("tr",null,h("td",{class:"mono"},i?"":id),h("td",null,q.query),h("td",{class:"mono"},q.added.join(", ")||"none new")); });
+      })))));
+  }
+  var dec=Object.keys(state.review).map(function(k){return k+": "+state.review[k];}).join(" · ")||"No decisions yet.";
+  main.replaceChildren(h("div",{class:"prose"},
+    h("h2",null,"This run"), kv,
+    h("h2",null,"Steps"), h("ul",{class:"log"},steps),
+    run.retrievalLog?h("h2",null,"Searches run"):null, run.retrievalLog?h("p",null,"Each assertion was searched once as written and once per phrase Claude proposed. Claude could only cite paragraphs inside the excerpts listed for that row; anything else is flagged."):null, ret,
+    h("h2",null,"Reviewer decisions"), h("p",{class:"mono",style:"font-size:12.5px"},dec)));
+}
+
+// ---------- how it works
+function renderHow(main){
+  function li(t,d){ return h("li",null,h("b",null,t+". "),d); }
+  main.replaceChildren(h("div",{class:"prose"},
+    h("h2",null,"What it does"),
+    h("p",null,"Give it a witness and the case record. It finds what the witness said under oath, searches the contemporaneous documents for anything that confirms, contradicts or complicates it, and drafts examination questions tied to the exhibit. Nothing reaches the lawyer unless its quote has been matched, word for word, to the cited paragraph."),
+    h("h2",null,"Who does what"),
+    h("ul",null,
+      li("Claude reads the deposition summary","It extracts sworn assertions with a quote and paragraph cite, skipping the summarizing lawyer's commentary, and proposes search phrases for each."),
+      li("Code searches the record","BM25 keyword search over primary documents only: emails, letters, the contract, the QA log. Emails are searched as whole messages, other documents by section. Pleadings are allegations and expert reports are opinion, so neither is used as impeachment evidence."),
+      li("Claude compares","Each assertion is compared only with the excerpts retrieved for it, and every piece of evidence must be quoted exactly with a pin cite."),
+      li("Code checks every quote","String matching, not a model: is this exact text in that paragraph? Wrong pin cites, invented quotes, citations outside the retrieved excerpts, and anything from a privilege-logged document go to the review queue."),
+      li("A lawyer decides","Accept or reject each row. Only accepted, verified rows become the outline.")),
+    h("h2",null,"Why the checker is code"),
+    h("p",null,"A model asked to confirm its own quotes tends to agree with itself. Fabricated and altered quotations are a large share of the AI-citation problems courts are now sanctioning. Deterministic matching gives a yes or no that does not depend on the model. Tick “Plant a fabricated quote” to insert one and watch it get rejected."),
+    h("h2",null,"Privilege"),
+    h("p",null,"The client CEO's January 3, 2023 email to outside counsel was produced to the other side and is on the privilege log while clawback is considered. It stays searchable because it is in the production, but any use of it is held until an attorney decides. In a production deployment you might filter it out before retrieval instead."),
+    h("h2",null,"Limits"),
+    h("ul",null,
+      h("li",null,"The checker proves the words are in the source. It does not prove the source supports the inference; that is the lawyer's review."),
+      h("li",null,"Keyword search can miss a document that says the same thing in other words. On the sample run it found 18 of the 21 passages the analysis relies on."),
+      h("li",null,"Testimony comes from deposition summaries, not certified transcripts, so cites are to summary paragraphs rather than page and line."),
+      h("li",null,"A prototype on a public, fictional record. Not deployed on client data.")),
+    h("h2",null,"How this maps to Legora"),
+    h("p",null,"The pattern is a Skill plus a Tabular Review: instructions and negative examples (“never paraphrase inside quotation marks”), one row per sworn assertion with columns for the confronting exhibit, exact quote, pin cite, verification status and reviewer sign-off, then a verification step before anything is exported.")));
+}
+
+// ---------- viewer
+function openViewer(doc, para, quote){
+  state.viewer={doc:doc, para:para, quote:quote, all:false}; renderViewer();
+  $("viewer").setAttribute("data-open","true");
+}
+function renderViewer(){
+  var v=state.viewer, d=v.doc?docOf(v.doc):null;
+  var sel=$("vdoc"); if(!sel.options.length){ sel.append(h("option",{value:""},"Browse the record…")); RECORD.docs.forEach(function(x){ sel.append(h("option",{value:x.id},x.title)); }); }
+  sel.value=d?d.id:"";
+  if(!d){ $("vtitle").textContent="Select a citation"; $("vmeta").textContent="Click any pin cite to open the document at that paragraph."; $("vpriv").replaceChildren(); $("vbody").replaceChildren(h("div",{class:"claim",style:"padding:10px 0"},"The record has "+RECORD.docs.length+" documents. Pin cites in the matrix open here, with the quoted words highlighted.")); return; }
+  $("vtitle").textContent=d.title;
+  $("vmeta").textContent=(v.para?WW.cite(RECORD,d.id,v.para)+" · ":"")+d.kind+(d.bates&&d.bates.length?" · "+d.bates[0]+(d.bates.length>1?" to "+d.bates[d.bates.length-1]:""):"");
+  if(d.privileged) $("vpriv").replaceChildren(h("div",{class:"privbar"},"◆ Privilege log: "+RECORD.privilege_log[0].entry)); else $("vpriv").replaceChildren();
+  var n=v.para||1, from=v.all?1:Math.max(1,n-3), to=v.all?d.paras.length:Math.min(d.paras.length,n+3);
+  var out=[];
+  for(var i=from;i<=to;i++){
+    var t=d.paras[i-1];
+    out.push(h("div",{class:"para"+(i===v.para?" target":""),id:"vp-"+i}, h("span",{class:"n"},"¶"+i), h("div",null, i===v.para?highlight(t,v.quote):t)));
+  }
+  $("vbody").replaceChildren.apply($("vbody"), out);
+  $("vall").textContent=v.all?"Show nearby only":"Show whole document";
+  var tgt=document.getElementById("vp-"+n); if(tgt&&v.para) tgt.scrollIntoView({block:"center"});
+}
+
+// ---------- render
+function render(){
+  if(!state.result) recompute();
+  renderPipe();
+  document.querySelectorAll(".tab").forEach(function(t){ t.setAttribute("aria-selected", t.dataset.tab===state.tab?"true":"false"); });
+  var main=$("main");
+  var full = state.tab==="audit"||state.tab==="how"||state.tab==="outline";
+  $("body").className="body"+(full?" full":""); $("viewer").hidden=full;
+  if(state.tab==="matrix") renderMatrix(main);
+  else if(state.tab==="queue"){ $("body").className="body"; $("viewer").hidden=false; renderQueue(main); }
+  else if(state.tab==="outline") renderOutline(main);
+  else if(state.tab==="audit") renderAudit(main);
+  else renderHow(main);
+  $("witness").value=state.run.witness; $("lens").value=state.run.lens||"examine";
+}
+function selectRun(r){ state.run=r; state.result=null; state.viewer={doc:null,para:null,quote:null,all:false}; recompute(); renderRunSelect(); render(); renderViewer(); }
+
+// ---------- live run
+var ERR = { not_granted:"Claude was not allowed for this page, so a live run cannot start. The sample run still works.",
+  sampling_disabled:"Claude is not available for this account. The sample run still works.",
+  rate_limited:"Too many requests just now. Wait a minute, then run again.", session_expired:"Sign in again, then run again.",
+  invalid_json:"Claude's reply could not be read as data. Run again.", refused:"Claude declined this request.",
+  prompt_too_large:"The record excerpt was too large for one request.", empty_completion:"Claude returned nothing. Run again." };
+function notice(msg, err){ var n=$("notice"); if(!msg){ n.hidden=true; return; } n.hidden=false; n.className="notice"+(err?" err":""); n.textContent=msg; }
+function stamp(){ return new Date().toISOString().replace("T"," ").slice(0,19)+"Z"; }
+
+function cleanExtraction(arr){
+  if(!Array.isArray(arr)) throw {code:"invalid_json"};
+  return arr.filter(function(x){ return x && x.quote && x.para; }).slice(0,14).map(function(x,i){
+    return { id: x.id && /^T\d+$/.test(x.id) ? x.id : "T"+(i+1), topic:String(x.topic||"Assertion"), claim:String(x.claim||""), quote:String(x.quote), para:parseInt(x.para,10),
+      search: Array.isArray(x.search)? x.search.slice(0,4).map(String) : [] };
+  });
+}
+
+async function runLive(){
+  var sample=state.cap.sample;
+  if(!sample){ notice("Live runs need Claude, which this view does not offer. Open the page in Claude to run it; the sample run works anywhere.", true); return; }
+  var witness=$("witness").value, lens=$("lens").value, wdoc=docOf(witness);
+  var ctl=new AbortController(); state.ctl=ctl; state.busy=true; notice(null);
+  $("go").disabled=true; $("stop").hidden=false;
+  var log=[{step:"Record loaded", t:stamp(), detail:RECORD.docs.length+" documents, "+CHUNKS.length+" primary-document excerpts; testimony from "+wdoc.title}];
+  var run={ id:"live-"+Date.now(), witness:witness, lens:lens, createdAt:new Date().toISOString(), tier:"Claude, default tier",
+    label:"Live · "+WITNESS_NAME[witness].split(" ").pop()+" · "+(lens==="defend"?"preparing":"examining")+" · "+new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}),
+    origin:"Live run in this page: Claude read the deposition summary and the retrieved excerpts; the checker verified every quote.",
+    extraction:[], analysis:[], log:log };
+  state.live.steps={record:"done", extract:"active"}; state.run=run; state.result=WW.assess(RECORD, run, {}); state.review={}; renderPipe();
+  var t0=Date.now();
+  function prog(label){ return function(u){ $("progress").textContent=label+" · "+u.text.length.toLocaleString()+" characters written · "+Math.round((Date.now()-t0)/1000)+"s"; }; }
+  try{
+    $("progress").textContent="Claude is reading "+wdoc.short+" (often 20 to 60 seconds)…";
+    var ex=await sample.json(WW.extractPrompt(RECORD, witness, 12), {signal:ctl.signal, onText:prog("Extracting sworn assertions"), modelTier:"default"});
+    run.extraction=cleanExtraction(ex);
+    log.push({step:"Testimony extracted", t:stamp(), detail:run.extraction.length+" sworn assertions with quotes and paragraph cites"});
+    state.live.steps.extract="done"; state.live.steps.search="active"; state.result=WW.assess(RECORD, run, {}); renderPipe();
+
+    var selected={}, retrieved={}, rlog={}, total=0, seen={};
+    run.extraction.forEach(function(it){
+      var r=WW.retrieveFor(INDEX, CHUNKS, it, wdoc, 7);
+      selected[it.id]=r.chunks; rlog[it.id]=r.log;
+      retrieved[it.id]=[].concat.apply([], r.chunks.map(function(c){ return c.paras.map(function(p){ return {doc:c.doc, para:p}; }); }));
+      r.chunks.forEach(function(c){ if(!seen[c.cid]){ seen[c.cid]=1; total++; } });
+    });
+    run.retrieved=retrieved; run.retrievalLog=rlog; run.selectedCount=total;
+    log.push({step:"Record searched", t:stamp(), detail:total+" distinct excerpts selected across "+run.extraction.length+" assertions, from the assertion text and Claude's search phrases"});
+    state.live.steps.search="done"; state.live.steps.compare="active"; renderPipe();
+
+    t0=Date.now();
+    $("progress").textContent="Claude is comparing each assertion with its excerpts (often 30 to 90 seconds)…";
+    var an=await sample.json(WW.comparePrompt(RECORD, run.extraction, selected, lens), {signal:ctl.signal, onText:prog("Comparing with the record"), modelTier:"default"});
+    if(!Array.isArray(an)) throw {code:"invalid_json"};
+    run.analysis=an;
+    log.push({step:"Compared", t:stamp(), detail:an.length+" assertions classified against their own excerpts"});
+    state.live.steps.compare="done"; state.live.steps.check="done";
+    var res=WW.assess(RECORD, run, {});
+    log.push({step:"Checked", t:stamp(), detail:res.metrics.verified+" of "+res.metrics.quotes+" quotes verified; "+res.metrics.rejected+" rejected; "+res.metrics.held+" held for privilege"});
+    state.runs.splice(1,0,run); state.run=run; state.result=null; recompute(); renderRunSelect();
+    $("progress").textContent="Done in "+Math.round((Date.now()-t0)/1000)+"s for the comparison. Review the rows, then build the outline.";
+    saveRun(run);
+  }catch(e){
+    var code=e&&e.code;
+    if(code==="cancelled"){ notice("Stopped. The sample run is still available from the Run menu."); }
+    else notice(ERR[code]||"The live run did not finish ("+(code||"error")+"). The sample run still works.", true);
+    $("progress").textContent="";
+    if(!run.analysis.length){ state.run=state.runs[0]; state.result=null; recompute(); }
+  }finally{
+    state.busy=false; state.live.steps={}; $("go").disabled=false; $("stop").hidden=true; render();
+  }
+}
+
+// ---------- saved runs (owner only)
+async function saveRun(run){
+  var db=state.cap.db; if(!db) return;
+  try{ await db.collection("runs").doc(run.id).set(JSON.parse(JSON.stringify(run))); }catch(e){ /* read-only viewers cannot save; the run stays in this view */ }
+}
+async function loadRuns(){
+  var db=state.cap.db; if(!db) return;
+  try{
+    var snap=await db.collection("runs").orderBy("createdAt","desc").limit(10).get();
+    var got=snap.docs.map(function(d){ return d.data(); }).filter(function(r){ return r && r.extraction && r.analysis; });
+    if(!got.length) return;
+    state.runs=[SAMPLE].concat(got.filter(function(r){ return !state.runs.some(function(x){return x.id===r.id;}); }), state.runs.slice(1));
+    renderRunSelect();
+  }catch(e){}
+}
+
+// ---------- wiring
+document.querySelectorAll(".tab").forEach(function(t){ t.addEventListener("click", function(){ state.tab=t.dataset.tab; render(); }); });
+$("runsel").addEventListener("change", function(e){ selectRun(state.runs[+e.target.value]); });
+$("go").addEventListener("click", runLive);
+$("stop").addEventListener("click", function(){ if(state.ctl) state.ctl.abort(); });
+$("plant").addEventListener("change", function(e){ state.plant=e.target.checked; state.result=null; recompute(); render(); if(state.plant){ state.filter="all"; } });
+$("vdoc").addEventListener("change", function(e){ if(e.target.value) openViewer(e.target.value, 1, null); });
+$("vall").addEventListener("click", function(){ state.viewer.all=!state.viewer.all; renderViewer(); });
+$("vclose").addEventListener("click", function(){ $("viewer").setAttribute("data-open","false"); state.viewer={doc:null,para:null,quote:null,all:false}; renderViewer(); });
+
+// sample-run retrieval recall, measured here against the sample's own evidence
+(function(){
+  var w=docOf(SAMPLE.witness), hit=0, tot=0, total=0, seen={}, rlog={};
+  SAMPLE.extraction.forEach(function(it){
+    var r=WW.retrieveFor(INDEX, CHUNKS, it, w, 7); rlog[it.id]=r.log;
+    r.chunks.forEach(function(c){ if(!seen[c.cid]){ seen[c.cid]=1; total++; } });
+    var a=SAMPLE.analysis.filter(function(x){return x.id===it.id;})[0]; if(!a) return;
+    a.evidence.forEach(function(e){ tot++; if(r.chunks.some(function(c){ return c.doc===e.doc && c.paras.indexOf(+e.para)>=0; })) hit++; });
+  });
+  SAMPLE.retrievalRecall={hit:hit,total:tot}; SAMPLE.selectedCount=total; SAMPLE.retrievalLog=rlog;
+})();
+
+renderMatter(); renderRunSelect(); recompute(); render(); renderViewer();
+
+(async function(){
+  if(!window.claude || !window.claude.use) { $("go").title="Open in Claude to run live"; return; }
+  try{ state.cap.downloads = await window.claude.use("downloads"); }catch(e){}
+  try{ state.cap.sample = await window.claude.use("sample"); }catch(e){}
+  try{ state.cap.db = await window.claude.use("db"); }catch(e){}
+  if(!state.cap.sample) $("go").title="Live runs need Claude in this view";
+  loadRuns(); render();
+})();
+})();
+</script>
