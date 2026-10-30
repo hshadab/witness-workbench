@@ -12,20 +12,23 @@
   --accent:#1E4C78; --accent-ink:#FFFFFF; --sticker:#F2CF3D; --hl:#FFF1A3;
   --bad:#B3261E; --bad-bg:#FBE8E6; --warn:#9A5B06; --warn-bg:#FCF0D9; --good:#2B6A3A; --good-bg:#E4F1E6; --neutral:#5F6873; --neutral-bg:#ECEEF0;
   --priv:#6B3FA0; --priv-bg:#F0E8FA;
+  --band:#E3ECF5; --band-rule:#C3D4E6; --ai-tint:#E8F0F8; --rules-tint:#EEF1EC; --lawyer-tint:#FFF6CC; --lawyer-edge:#E7CF62;
   --display:"IBM Plex Serif", Georgia, "Times New Roman", serif;
   --body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
-  --bg:#10151C; --surface:#171E27; --sunk:#1D2530; --ink:#E5E8EC; --muted:#A0A9B4; --faint:#76808C; --rule:#2A3440;
+  --bg:#0C1117; --surface:#1A2330; --sunk:#243142; --ink:#E8EBEF; --muted:#A9B2BD; --faint:#808A96; --rule:#354357;
   --accent:#8FB9E4; --accent-ink:#0F1720; --sticker:#E0BE33; --hl:#4D4310;
   --bad:#F08A80; --bad-bg:#3A1C1A; --warn:#E7B060; --warn-bg:#372A12; --good:#80C690; --good-bg:#183020; --neutral:#A3ABB5; --neutral-bg:#232C37;
-  --priv:#C3A2EE; --priv-bg:#2C2140; color-scheme:dark }}
+  --priv:#C3A2EE; --priv-bg:#2C2140;
+  --band:#152233; --band-rule:#2B4462; --ai-tint:#18283B; --rules-tint:#1E2733; --lawyer-tint:#2E2A14; --lawyer-edge:#7A6A22; color-scheme:dark }}
 :root[data-theme="dark"]{
-  --bg:#10151C; --surface:#171E27; --sunk:#1D2530; --ink:#E5E8EC; --muted:#A0A9B4; --faint:#76808C; --rule:#2A3440;
+  --bg:#0C1117; --surface:#1A2330; --sunk:#243142; --ink:#E8EBEF; --muted:#A9B2BD; --faint:#808A96; --rule:#354357;
   --accent:#8FB9E4; --accent-ink:#0F1720; --sticker:#E0BE33; --hl:#4D4310;
   --bad:#F08A80; --bad-bg:#3A1C1A; --warn:#E7B060; --warn-bg:#372A12; --good:#80C690; --good-bg:#183020; --neutral:#A3ABB5; --neutral-bg:#232C37;
-  --priv:#C3A2EE; --priv-bg:#2C2140; color-scheme:dark }
+  --priv:#C3A2EE; --priv-bg:#2C2140;
+  --band:#152233; --band-rule:#2B4462; --ai-tint:#18283B; --rules-tint:#1E2733; --lawyer-tint:#2E2A14; --lawyer-edge:#7A6A22; color-scheme:dark }
 
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 var(--body)}
@@ -209,6 +212,36 @@ td .q{font-family:var(--display)}
   .kv,.log li{grid-template-columns:minmax(0,1fr)}
   .paper,.prose{padding:16px}
 }
+
+/* contrast layer: give each region its own surface so the page is not one flat field */
+.top{background:var(--band);border:1px solid var(--band-rule);border-radius:12px;padding:16px 18px;border-bottom:1px solid var(--band-rule)}
+.controls{border-left:4px solid var(--accent);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.btn{border-color:var(--accent);color:var(--accent);font-weight:500}
+.btn:hover{background:var(--ai-tint);border-color:var(--accent)}
+.btn.primary{box-shadow:0 2px 6px rgba(30,76,120,.35)}
+.pipe{background:transparent;border:0;gap:8px;overflow:visible}
+.stage{border:1px solid var(--rule);border-radius:8px;background:var(--rules-tint);border-top:3px solid var(--faint)}
+.stage:has(.who.ai){background:var(--ai-tint);border-top-color:var(--accent)}
+.stage:has(.who.you){background:var(--lawyer-tint);border-top-color:var(--lawyer-edge)}
+.stage:last-child{border-right:1px solid var(--rule)}
+.stage:has(.who.you):last-child{border-right-color:var(--rule)}
+.tabs{gap:6px;border-bottom:0;padding:4px;background:var(--sunk);border-radius:10px;width:max-content;max-width:100%}
+.tab{border-bottom:0;border-radius:7px;padding:8px 14px}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.tab[aria-selected="true"] .n{background:rgba(255,255,255,.22);color:inherit}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.row{border-left:4px solid var(--rule)}
+.row:has(.st-contradicts){border-left-color:var(--bad)}
+.row:has(.st-qualifies){border-left-color:var(--warn)}
+.row:has(.st-consistent){border-left-color:var(--good)}
+.row .cell:first-child{background:var(--sunk);border-radius:4px 0 0 4px}
+.rv.acc{border-color:var(--good);color:var(--good)}
+.rv.rej{border-color:var(--bad);color:var(--bad)}
+.viewer{border-top:3px solid var(--accent)}
+.vhead{background:var(--ai-tint)}
+.tablewrap,.paper,.prose{box-shadow:0 1px 2px rgba(0,0,0,.08)}
+@media (max-width:640px){.pipe{gap:6px}.stage:nth-child(2n){border-right:1px solid var(--rule)}}
 </style>
 
 <div class="wrap">
@@ -225,7 +258,7 @@ td .q{font-family:var(--display)}
     </div>
     <div class="controls">
       <div class="field"><label for="witness">Witness</label>
-        <select id="witness"><option value="dep-holcomb">Derek Holcomb, VP Sales</option><option value="dep-fong">Lisa Fong, Dir. Quality Assurance</option></select></div>
+        <select id="witness"><option value="dep-holcomb">Derek Holcomb, VP Sales</option></select></div>
       <div class="field"><label for="lens">Lens</label>
         <select id="lens"><option value="examine">Examining (adverse)</option><option value="defend">Preparing our witness</option></select></div>
       <div class="field"><label for="runsel">Run</label><select id="runsel"></select></div>
@@ -318,7 +351,7 @@ function highlight(text, quote){
 // ---------- matter strip, run list
 function renderMatter(){
   var m=RECORD.matter;
-  $("matter").replaceChildren(h("span",null,h("b",null,m.caption)), h("span",null,m.court+" · "+m.number), h("span",null,"Client: "+m.client), h("span",{class:"tag"},"Public benchmark record · fictional"));
+  $("matter").replaceChildren(h("span",null,h("b",null,m.caption)), h("span",null,m.court+" · "+m.number), h("span",{class:"tag"},"Public benchmark record · fictional"));
 }
 function renderRunSelect(){
   var sel=$("runsel"); sel.replaceChildren();
@@ -349,7 +382,7 @@ function renderPipe(){
   ];
   $("pipe").replaceChildren.apply($("pipe"), stages.map(function(st){
     var cls="stage"+(s[st.key]==="active"?" active":s[st.key]==="done"?" done":"");
-    return h("div",{class:cls}, h("span",{class:"who "+st.who, title: st.who==="ai"?"Claude":st.who==="code"?"Deterministic code":"Attorney"}, st.who==="ai"?"Claude":st.who==="code"?"Code":"Lawyer"),
+    return h("div",{class:cls}, h("span",{class:"who "+st.who, title: st.who==="ai"?"Claude":st.who==="code"?"Fixed rules, not AI":"Attorney"}, st.who==="ai"?"Claude":st.who==="code"?"Rules":"Lawyer"),
       h("div",{class:"k"},st.k), h("div",{class:"v"},state.busy&&s[st.key]!=="done"&&st.key!=="record"?"…":st.v), h("div",{class:"d"},st.d));
   }));
   $("nq").textContent=String(r.exceptions.length); $("nq").className="n"+(r.exceptions.length?" alert":"");
