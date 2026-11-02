@@ -242,6 +242,25 @@ td .q{font-family:var(--display)}
 .vhead{background:var(--ai-tint)}
 .tablewrap,.paper,.prose{box-shadow:0 1px 2px rgba(0,0,0,.08)}
 @media (max-width:640px){.pipe{gap:6px}.stage:nth-child(2n){border-right:1px solid var(--rule)}}
+
+/* brief cite check */
+.bwrap{display:grid;gap:14px}
+.bin{width:100%;min-height:170px;box-sizing:border-box;background:var(--surface);color:var(--ink);border:1px solid var(--rule);border-radius:8px;padding:12px 14px;font:400 14px/1.55 var(--display);resize:vertical}
+.bbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.bsum{display:flex;flex-wrap:wrap;gap:6px}
+.st-ok{background:var(--good-bg);color:var(--good)}
+.st-fail{background:var(--bad-bg);color:var(--bad)}
+.st-hold{background:var(--bad-bg);color:var(--bad);outline:1px dashed var(--bad)}
+.st-warn{background:var(--warn-bg);color:var(--warn)}
+.st-judge{background:var(--neutral-bg);color:var(--neutral)}
+.brow{background:var(--surface);border:1px solid var(--rule);border-left:4px solid var(--rule);border-radius:8px;padding:11px 14px;min-width:0}
+.brow:has(.st-ok){border-left-color:var(--good)}
+.brow:has(.st-fail),.brow:has(.st-hold){border-left-color:var(--bad)}
+.brow:has(.st-warn){border-left-color:var(--warn)}
+.bclaim{font:400 14px/1.5 var(--display);margin:6px 0}
+.bchecks{margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--muted)}
+.bchecks li.fail,.bchecks li.hold{color:var(--bad)}
+.bchecks li.ok{color:var(--good)}
 </style>
 
 <div class="wrap">
@@ -276,6 +295,7 @@ td .q{font-family:var(--display)}
     <button class="tab" role="tab" data-tab="matrix" aria-selected="true">Contradiction matrix</button>
     <button class="tab" role="tab" data-tab="queue">Review queue <span class="n" id="nq">0</span></button>
     <button class="tab" role="tab" data-tab="outline">Deposition outline <span class="n" id="no">0</span></button>
+    <button class="tab" role="tab" data-tab="brief">Brief cite check</button>
     <button class="tab" role="tab" data-tab="audit">Audit trail</button>
     <button class="tab" role="tab" data-tab="how">How it works</button>
   </nav>
@@ -300,6 +320,7 @@ td .q{font-family:var(--display)}
 
 <script type="application/json" id="record-data">__RECORD__</script>
 <script type="application/json" id="sample-data">__SAMPLE__</script>
+<script type="application/json" id="brief-data">__BRIEF__</script>
 <script>
 __CORE__
 </script>
@@ -321,7 +342,8 @@ var KIND_ACTION = {wrong_pin:"The words exist elsewhere in this document. Correc
   privileged:"Privilege-logged document (produced, clawback under consideration). An attorney decides before any use."};
 var STATUS_LABEL = {contradicts:"Contradicts", qualifies:"Qualifies", consistent:"Consistent", no_support:"No support found", missing:"Not analyzed"};
 
-var state = { runs:[SAMPLE], run:SAMPLE, result:null, tab:"matrix", filter:"all", sel:null, viewer:{doc:null,para:null,quote:null,all:false},
+var BRIEF = JSON.parse(document.getElementById("brief-data").textContent);
+var state = { brief:BRIEF, briefResult:null, runs:[SAMPLE], run:SAMPLE, result:null, tab:"matrix", filter:"all", sel:null, viewer:{doc:null,para:null,quote:null,all:false},
   review:{}, plant:false, busy:false, ctl:null, live:{steps:{}, note:""}, cap:{sample:null, db:null, downloads:null}, onlyAccepted:true };
 
 // ---------- helpers
@@ -565,6 +587,34 @@ function renderHow(main){
     h("p",null,"The pattern is a Skill plus a Tabular Review: instructions and negative examples (“never paraphrase inside quotation marks”), one row per sworn assertion with columns for the confronting exhibit, exact quote, pin cite, verification status and reviewer sign-off, then a verification step before anything is exported.")));
 }
 
+
+// ---------- brief cite check
+var BLABEL = {ok:"Verified", fail:"Fix before filing", hold:"Privileged: hold", warn:"Weak source", judge:"Attorney to confirm"};
+function renderBrief(main){
+  var ta=h("textarea",{class:"bin",id:"briefin","aria-label":"Brief text",spellcheck:"false"}); ta.value=state.brief;
+  var run=function(){ state.brief=$("briefin").value; state.briefResult=WW.checkBrief(RECORD,state.brief); renderBrief($("main")); };
+  if(!state.briefResult) state.briefResult=WW.checkBrief(RECORD,state.brief);
+  var r=state.briefResult, s=r.summary;
+  var rows=r.rows.map(function(x,i){
+    var q=(x.checks.filter(function(c){return c.quote;})[0]||{}).quote||null;
+    var go=x.doc&&!x.checks.some(function(c){return c.kind==="cite"&&c.result==="fail";});
+    var fp=(x.checks.filter(function(c){return c.foundPara;})[0]||{}).foundPara;
+    return h("div",{class:"brow"},
+      h("div",{class:"rowhead"}, h("span",{class:"rid"},"#"+(i+1)+" · brief ¶"+x.briefPara), h("span",{class:"pill st-"+x.status},BLABEL[x.status])),
+      h("div",{class:"bclaim"},x.claim||"(no text before the cite)"),
+      go?h("button",{class:"citebtn",type:"button",onclick:function(){ openViewer(x.doc,x.para,q); }},"↗ "+x.cite):h("span",{class:"rowcheck"},x.cite),
+      fp?h("button",{class:"citebtn",type:"button",style:"margin-left:12px",onclick:function(){ openViewer(x.doc,fp,q); }},"↗ found at ¶ "+fp):null,
+      h("ul",{class:"bchecks"}, x.checks.map(function(c){ return h("li",{class:c.result},c.note); })));
+  });
+  main.replaceChildren(h("div",{class:"bwrap"},
+    h("p",{class:"claim",style:"margin:0"},"Paste a draft brief or statement of facts. Every record cite in the form (Label ¶ N) is checked against the record by fixed rules: quoted words word for word, dollar figures and percentages against the cited paragraph, privilege-logged and pleading sources flagged. Whether an unquoted sentence is supported is left to the attorney. The sample below is a draft with planted errors."),
+    ta,
+    h("div",{class:"bbar"}, h("button",{class:"btn primary",type:"button",onclick:run},"Check cites"),
+      h("button",{class:"btn",type:"button",onclick:function(){ state.brief=BRIEF; state.briefResult=null; renderBrief($("main")); }},"Reset sample"),
+      h("div",{class:"bsum"}, h("span",{class:"pill st-ok"},s.ok+" verified"), h("span",{class:"pill st-fail"},s.fail+" to fix"), h("span",{class:"pill st-hold"},s.hold+" privileged"), h("span",{class:"pill st-warn"},s.warn+" weak source"), h("span",{class:"pill st-judge"},s.judge+" attorney to confirm"))),
+    h("div",{class:"rows"},rows)));
+}
+
 // ---------- viewer
 function openViewer(doc, para, quote){
   state.viewer={doc:doc, para:para, quote:quote, all:false}; renderViewer();
@@ -600,6 +650,7 @@ function render(){
   if(state.tab==="matrix") renderMatrix(main);
   else if(state.tab==="queue"){ $("body").className="body"; $("viewer").hidden=false; renderQueue(main); }
   else if(state.tab==="outline") renderOutline(main);
+  else if(state.tab==="brief"){ $("body").className="body"; $("viewer").hidden=false; renderBrief(main); }
   else if(state.tab==="audit") renderAudit(main);
   else renderHow(main);
   $("witness").value=state.run.witness; $("lens").value=state.run.lens||"examine";

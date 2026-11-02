@@ -19,6 +19,7 @@ def main():
     page = (ROOT / "src/page.html").read_text(encoding="utf-8")
     out = (page.replace("__RECORD__", inline_json("data/record.json"))
                .replace("__SAMPLE__", inline_json("data/sample-holcomb.json"))
+               .replace("__BRIEF__", json.dumps((ROOT / "data/sample-brief.txt").read_text(encoding="utf-8"), ensure_ascii=False).replace("</", "<\\/"))
                .replace("__CORE__", (ROOT / "src/core.js").read_text(encoding="utf-8")))
     dest = ROOT / "dist/witness-workbench.html"
     dest.parent.mkdir(exist_ok=True)

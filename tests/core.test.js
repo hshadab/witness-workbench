@@ -147,3 +147,28 @@ test("the preparing-our-witness lens forbids coaching", () => {
   const p = WW.comparePrompt(RECORD, SAMPLE.extraction.slice(0, 1), {}, "defend");
   assert.match(p, /Never suggest that the witness change or shade truthful testimony/);
 });
+
+// ---- brief cite check ------------------------------------------------------
+
+test("brief cite check: the sample brief's planted errors are all caught", () => {
+  const fs = require("node:fs");
+  const brief = fs.readFileSync(require("node:path").join(__dirname, "../data/sample-brief.txt"), "utf8");
+  const r = WW.checkBrief(RECORD, brief);
+  const by = Object.fromEntries(r.rows.map((x) => [x.cite, x]));
+  assert.equal(r.summary.total, 12);
+  assert.equal(by["GRN-004217 ¶ 4"].status, "fail");
+  assert.equal(by["GRN-004217 ¶ 4"].checks.find((c) => c.kind === "quote").foundPara, 5);
+  assert.equal(by["GRN-004226 ¶ 35"].status, "fail");
+  assert.equal(by["GRN-004230 ¶ 58"].status, "fail");
+  assert.equal(by["Breach Notice ¶ 41"].status, "fail");
+  assert.equal(by["GL-PROD-007834 ¶ 2"].status, "hold");
+  assert.equal(by["Compl. ¶ 13"].status, "warn");
+  assert.equal(by["Termination Notice ¶ 8"].status, "ok");
+  assert.equal(by["GRN-004230 ¶ 54"].status, "ok");
+});
+
+test("brief cite check: figures compare by value, not by formatting", () => {
+  assert.equal(WW.figKey("$630K"), WW.figKey("$630,000"));
+  assert.equal(WW.figKey("$1.9 million"), WW.figKey("$1,900,000"));
+  assert.notEqual(WW.figKey("$5.2M"), WW.figKey("$5.8M"));
+});

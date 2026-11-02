@@ -360,7 +360,90 @@ var WW = (function () {
     return { rows: rows, exceptions: exceptions, metrics: m };
   }
 
-  return { norm: norm, verifyQuote: verifyQuote, cite: cite, docById: docById, tokens: tokens,
+
+  // ---- record-cite check for a brief -----------------------------------
+  // Deterministic. Finds every record cite of the form "(<label> ¶ N)",
+  // resolves the label to a record document (by short name or by a Bates
+  // number inside an email), and checks what the brief says against the
+  // cited paragraph: quoted words word for word, and dollar figures and
+  // percentages that appear in the sentence. Whether an unquoted sentence
+  // is supported by the page is a judgment, so it is left to the attorney.
+  function citeLabels(record) {
+    var map = {};
+    record.docs.forEach(function (d) {
+      map[norm(d.short)] = d.id;
+      (d.ctx || []).forEach(function (c) { if (c && c.bates) map[norm(c.bates)] = d.id; });
+      (Array.isArray(d.bates) ? d.bates : []).forEach(function (b) { map[norm(b)] = d.id; });
+    });
+    return map;
+  }
+
+  var CITE_RE = /\(([^()]*?)\s*¶\s*(\d+)\)/g;
+  var QUOTE_RE = /[“"]([^”"]+)[”"]/g;
+  var FIG_RE = /\$\s?\d[\d,]*(?:\.\d+)?\s?(?:[KkMm]\b|million\b|thousand\b)?|\b\d+(?:\.\d+)?%/g;
+
+  function figKey(f) {
+    var s = String(f).toLowerCase().replace(/\s+/g, "").replace(/,/g, "");
+    var m = s.match(/^\$?([\d.]+)(k|m|million|thousand)?%?$/);
+    if (!m) return s;
+    var v = parseFloat(m[1]);
+    if (m[2] === "k" || m[2] === "thousand") v *= 1e3;
+    if (m[2] === "m" || m[2] === "million") v *= 1e6;
+    return (s.indexOf("%") >= 0 ? "pct:" : "usd:") + Math.round(v);
+  }
+  function figuresIn(text) {
+    return (String(text).match(FIG_RE) || []).map(function (f) { return f.trim(); });
+  }
+
+  function checkBrief(record, text) {
+    var labels = citeLabels(record), out = [];
+    String(text).split(/\n\s*\n/).forEach(function (para, pi) {
+      para.split(/(?<=\)\.)\s+/).forEach(function (seg) {
+        var cites = [], m;
+        CITE_RE.lastIndex = 0;
+        while ((m = CITE_RE.exec(seg))) cites.push({ at: m.index, end: m.index + m[0].length, label: m[1].replace(/^(see also|see|cf\.)\s+/i, "").trim(), para: parseInt(m[2], 10), raw: m[0] });
+        var quotes = [];
+        QUOTE_RE.lastIndex = 0;
+        while ((m = QUOTE_RE.exec(seg))) quotes.push({ at: m.index, q: m[1] });
+        var prev = 0;
+        cites.forEach(function (c) {
+          var claim = seg.slice(prev, c.at).trim();
+          var mine = quotes.filter(function (q) { return q.at >= prev && q.at < c.at; });
+          var bare = claim.replace(QUOTE_RE, " ");
+          var r = { briefPara: pi + 1, cite: c.raw.slice(1, -1), claim: claim, label: c.label, para: c.para, checks: [], status: "ok" };
+          var docId = labels[norm(c.label)], doc = docId && docById(record, docId);
+          var bump = function (st) { var order = { ok: 0, judge: 1, warn: 2, hold: 3, fail: 4 }; if (order[st] > order[r.status]) r.status = st; };
+          if (!doc) { r.checks.push({ kind: "cite", result: "fail", note: "No record document matches “" + c.label + "”." }); bump("fail"); }
+          else if (!(c.para >= 1 && c.para <= doc.paras.length)) { r.doc = docId; r.checks.push({ kind: "cite", result: "fail", note: doc.short + " has " + doc.paras.length + " paragraphs. ¶ " + c.para + " does not exist." }); bump("fail"); }
+          else {
+            r.doc = docId;
+            if (doc.privileged) { r.checks.push({ kind: "privilege", result: "hold", note: "Cites a document on the privilege log. Do not file until an attorney decides on clawback." }); bump("hold"); }
+            if (doc.kind === "pleading") { r.checks.push({ kind: "source", result: "warn", note: "Cites a pleading. That is an allegation, not evidence of the fact." }); bump("warn"); }
+            mine.forEach(function (q) {
+              var v = verifyQuote(record, docId, c.para, q.q);
+              if (v.status === "verified") r.checks.push({ kind: "quote", result: "ok", quote: q.q, note: "Quote matches ¶ " + c.para + " word for word." });
+              else if (v.status === "wrong_pin") { r.checks.push({ kind: "quote", result: "fail", quote: q.q, foundPara: v.foundPara, note: "Quote is at ¶ " + v.foundPara + ", not ¶ " + c.para + "." }); bump("fail"); }
+              else if (v.status === "too_short") { r.checks.push({ kind: "quote", result: "judge", quote: q.q, note: "Quote too short to prove anything; attorney to confirm." }); bump("judge"); }
+              else { r.checks.push({ kind: "quote", result: "fail", quote: q.q, note: "Quoted words are not in " + doc.short + " (checked every paragraph)." }); bump("fail"); }
+            });
+            var src = doc.paras[c.para - 1], have = {};
+            figuresIn(src).forEach(function (f) { have[figKey(f)] = 1; });
+            figuresIn(bare).forEach(function (f) {
+              if (have[figKey(f)]) r.checks.push({ kind: "figure", result: "ok", note: f + " appears in ¶ " + c.para + "." });
+              else { r.checks.push({ kind: "figure", result: "fail", note: f + " does not appear in ¶ " + c.para + "." }); bump("fail"); }
+            });
+            if (!mine.length) { r.checks.push({ kind: "support", result: "judge", note: "No quotation. Whether ¶ " + c.para + " supports the sentence is the attorney's call." }); bump("judge"); }
+          }
+          out.push(r);
+          prev = c.end;
+        });
+      });
+    });
+    var count = function (s) { return out.filter(function (r) { return r.status === s; }).length; };
+    return { rows: out, summary: { total: out.length, ok: count("ok"), judge: count("judge"), warn: count("warn"), hold: count("hold"), fail: count("fail") } };
+  }
+
+  return { checkBrief: checkBrief, figKey: figKey, norm: norm, verifyQuote: verifyQuote, cite: cite, docById: docById, tokens: tokens,
     evidencePool: evidencePool, chunkRecord: chunkRecord, retrieveFor: retrieveFor,
     buildIndex: buildIndex, retrieve: retrieve, extractPrompt: extractPrompt,
     comparePrompt: comparePrompt, assess: assess, LENS: LENS, FABRICATED: FABRICATED };

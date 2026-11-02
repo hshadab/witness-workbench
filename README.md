@@ -61,6 +61,18 @@ The sample run was prepared during the build by Claude following the same two
 instructions the live run sends, and is labeled that way in the page. The
 numbers are on one witness and are directional, not a benchmark result.
 
+## Brief cite check
+
+The same verification engine also checks a draft brief before filing. Paste a statement of facts; every record cite of the form `(Label ¶ N)` is resolved to a record document, by short name or by a Bates number inside an email, and checked by fixed rules:
+
+- quoted words must appear word for word in the cited paragraph; if they appear elsewhere, the right paragraph is reported
+- dollar figures and percentages in the sentence must appear in the cited paragraph, compared by value ($630K equals $630,000)
+- cites to a privilege-logged document are held; cites to a pleading are flagged as allegation, not evidence
+- a paragraph that does not exist is a failed cite
+- whether an unquoted sentence is supported is left to the attorney and labeled that way
+
+`data/sample-brief.txt` is a draft with planted errors. The check finds all of them: a wrong pin cite, a misquote, a wrong figure, a nonexistent paragraph, a privileged source and a pleading cited as evidence (12 cites: 5 verified, 4 to fix, 1 held, 1 weak source, 1 for the attorney).
+
 ## Run it
 
 The page is a single HTML file: `dist/witness-workbench.html`. It is published as
@@ -69,7 +81,7 @@ opened in Claude. Opened anywhere else, the sample run, the checker, the
 planted-quote test and the outline all still work.
 
 ```bash
-node --test 'tests/*.test.js'     # 19 offline tests: checker, privilege gate, retrieval, prompts
+node --test 'tests/*.test.js'     # 21 offline tests: checker, privilege gate, retrieval, prompts
 python3 scripts/build_page.py     # rebuild dist/ from src/ and data/
 ```
 
