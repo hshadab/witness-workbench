@@ -618,14 +618,14 @@ function renderPipe(){
   var rr=retrievalStats(run);
   var short=(docOf(run.witness)||{}).short||"the deposition";
   var stages=[
-    {n:1, k:"Ingest", who:"code", v:RECORD.docs.length+" documents", d:CHUNKS.length+" excerpts, split by email and contract section. Bates numbers and senders kept.", key:"record"},
+    {n:1, k:"Ingest", who:"code", v:RECORD.docs.length+" documents", d:CHUNKS.length+" excerpts, split by email and contract section. Document IDs and senders kept.", key:"record"},
     {n:2, k:"Testimony", who:"ai", v:m.items+" sworn statements", d:"Pulled from "+short+", each with an exact quote and pin cite.", key:"extract"},
-    {n:3, k:"Search", who:"code", v: rr ? rr.hit+" of "+rr.total+" key passages" : (excerpts!=null?excerpts:"0")+" excerpts", d:"Keyword search of the emails, contract, letters and QA log. Pleadings excluded.", key:"search"},
-    {n:4, k:"Compare", who:"ai", v:m.findings+" findings", d:"Statements the documents contradict or qualify, with draft cross questions.", key:"compare"},
+    {n:3, k:"Search", who:"code", v: rr ? rr.hit+" of "+rr.total+" key passages" : (excerpts!=null?excerpts:"0")+" excerpts", d:"Finds related passages in the emails, contract, letters and quality logs. Court filings left out.", key:"search"},
+    {n:4, k:"Compare", who:"ai", v:m.findings+" findings", d:"Statements the documents contradict or qualify, with draft questions for the witness.", key:"compare"},
     {n:5, k:"Check", who:"code", v:m.verified+" of "+m.quotes+" quotes verified", d:"Matched word for word to the cited paragraph. "+m.rejected+" rejected, "+m.held+" held for privilege.", key:"check"},
     {n:6, k:"Review", who:"you", v:accepted+" of "+m.items+" accepted", d:"The attorney accepts or rejects each row. Only verified, accepted rows reach the outline.", key:"review"}
   ];
-  var WHO={ai:"Claude", code:"Rules", you:"Lawyer"}, WHOT={ai:"Claude (AI)", code:"Fixed rules, not AI", you:"The attorney"};
+  var WHO={ai:"Claude", code:"Automated", you:"Lawyer"}, WHOT={ai:"Claude (AI)", code:"Automated check, not AI", you:"The attorney"};
   $("pipe").className="pipe";
   $("pipe").replaceChildren.apply($("pipe"), stages.map(function(st){
     var cls="stage"+(s[st.key]==="active"?" active":s[st.key]==="done"?" done":"");
