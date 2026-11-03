@@ -261,16 +261,123 @@ td .q{font-family:var(--display)}
 .bchecks{margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--muted)}
 .bchecks li.fail,.bchecks li.hold{color:var(--bad)}
 .bchecks li.ok{color:var(--good)}
+
+/* ===== enterprise layer: three-pane matter workspace ===== */
+:root{--bg:#F5F6F8;--sunk:#EEF0F3;--rule:#DFE3E8;--chrome:#FBFBFC;--navw:272px;
+  --display:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;--quote:"IBM Plex Serif", Georgia, serif}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){--bg:#0E131A;--sunk:#1C2531;--rule:#2C3949;--chrome:#121922}}
+:root[data-theme="dark"]{--bg:#0E131A;--sunk:#1C2531;--rule:#2C3949;--chrome:#121922}
+.wrap{max-width:1680px;padding-block:0 48px}
+.app{display:grid;grid-template-columns:var(--navw) minmax(0,1fr);gap:0;min-height:100vh}
+.mainc{min-width:0;padding:18px 0 0 22px}
+.nav{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;background:var(--chrome);border-right:1px solid var(--rule);padding:16px 12px 24px;font-size:13px}
+.nav .mx{padding:4px 8px 12px;border-bottom:1px solid var(--rule);margin-bottom:8px}
+.nav .mx .k{font:500 10.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.nav .mx b{display:block;font:600 14px/1.3 var(--body);margin-top:6px}
+.nav .mx .m{font:11.5px/1.4 var(--mono);color:var(--muted);margin-top:3px}
+.nav .mx a{display:inline-flex;gap:6px;align-items:center;margin-top:8px;font-size:12px;color:var(--accent);text-decoration:none}
+.nav .mx a:hover{text-decoration:underline}
+.nav details{margin:2px 0}
+.nav summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:5px;font:600 12px/1.2 var(--body);color:var(--ink)}
+.nav summary::-webkit-details-marker{display:none}
+.nav summary::before{content:"\25B8";font-size:10px;color:var(--faint);width:10px;transition:transform .15s}
+.nav details[open]>summary::before{transform:rotate(90deg)}
+.nav summary .c{margin-left:auto;font:500 10.5px var(--mono);color:var(--faint)}
+.nav summary:hover{background:var(--sunk)}
+.di{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:6px;align-items:start;padding:5px 8px 5px 22px;border-radius:5px;cursor:pointer;color:var(--ink);text-decoration:none;border:0;background:none;width:100%;text-align:left}
+.di:hover{background:var(--sunk)}
+.di.on{background:var(--ai-tint);box-shadow:inset 2px 0 0 var(--accent)}
+.di .ic{width:16px;height:16px;margin-top:1px;color:var(--faint)}
+.di .t{font-size:12.5px;line-height:1.3;overflow:hidden;text-overflow:ellipsis}
+.di .b{display:block;font:10.5px/1.35 var(--mono);color:var(--faint);margin-top:1px}
+.di .ext{color:var(--faint);padding:0 2px;font-size:12px;text-decoration:none;line-height:1.2}
+.di .ext:hover{color:var(--accent)}
+.badge{display:inline-block;font:600 9.5px/1 var(--mono);letter-spacing:.05em;text-transform:uppercase;padding:2px 4px;border-radius:3px;margin-left:5px;vertical-align:1px}
+.badge.priv{background:var(--priv-bg);color:var(--priv)}
+.badge.new{background:var(--good-bg);color:var(--good)}
+.nav .navnote{font-size:11px;color:var(--faint);padding:10px 8px 0;line-height:1.4}
+/* header: flat bar */
+.top{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:12px 16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.top>div:first-child{min-width:0}
+.brand{align-items:center;gap:10px}
+.sticker{width:30px;height:30px;border-radius:6px;transform:none;background:var(--accent);color:var(--accent-ink);font:600 11px/1 var(--mono);box-shadow:none}
+h1{font:600 17px/1.2 var(--body);letter-spacing:0}
+.sub{font-size:12.5px;margin-top:1px}
+.matter{display:none}
+.controls{background:none;border:0;box-shadow:none;border-left:0;padding:0}
+.btn{border-color:var(--rule);color:var(--ink)}
+.btn:hover{background:var(--sunk);border-color:var(--faint)}
+.btn.primary{box-shadow:none;color:var(--accent-ink)}
+/* breadcrumb */
+.crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:14px 0 2px;font-size:12.5px;color:var(--muted)}
+.crumbs .sep{color:var(--faint)}
+.crumbs b{color:var(--ink);font-weight:600}
+.crumbs .lens{margin-left:auto;font:500 11px var(--mono);color:var(--faint)}
+/* pipeline: compact */
+.pipe{gap:0;border:1px solid var(--rule);border-radius:8px;background:var(--surface);overflow:hidden;margin-top:12px}
+.stage{border:0;border-right:1px solid var(--rule);border-radius:0;background:var(--surface);border-top:3px solid var(--rule);padding:9px 12px 10px}
+.stage:has(.who.ai){background:var(--surface);border-top-color:var(--accent)}
+.stage:has(.who.you){background:var(--surface);border-top-color:var(--lawyer-edge)}
+.stage .v{font:600 17px/1.2 var(--body)}
+.stage:last-child{border-right:0}
+/* tabs: underline */
+.tabs{background:none;padding:0;border-radius:0;width:auto;gap:0;border-bottom:1px solid var(--rule);margin-top:12px}
+.tab{border-radius:0;border-bottom:2px solid transparent;padding:9px 14px;font-size:13px}
+.tab[aria-selected="true"]{background:none;color:var(--ink);border-bottom-color:var(--accent)}
+.tab[aria-selected="true"] .n{background:var(--sunk);color:var(--muted)}
+.body{grid-template-columns:minmax(0,1fr) 400px;gap:16px}
+blockquote,.bclaim,.oitem li,.para{font-family:var(--quote)}
+.viewer{border-top:1px solid var(--rule);border-radius:8px}
+.vhead{background:var(--chrome)}
+.vmeta{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px;margin-top:8px;font:11.5px/1.45 var(--body)}
+.vmeta dt{color:var(--faint);font:500 10px/1.8 var(--mono);text-transform:uppercase;letter-spacing:.06em}
+.vmeta dd{margin:0;color:var(--ink);min-width:0;overflow-wrap:anywhere}
+.vmeta a{color:var(--accent)}
+/* cite chips */
+.citebtn{border:1px solid var(--rule);background:var(--sunk);border-radius:999px;padding:2px 9px;font:500 11.5px/1.5 var(--mono);color:var(--accent);margin-top:6px}
+.citebtn:hover{text-decoration:none;border-color:var(--accent);background:var(--ai-tint)}
+/* review grid */
+.gridtools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.gridtools input[type=search]{border:1px solid var(--rule);border-radius:6px;padding:6px 10px;background:var(--surface);min-width:220px}
+.rgrid{overflow:auto;background:var(--surface);border:1px solid var(--rule);border-radius:8px;max-height:calc(100vh - 150px)}
+.rgrid table{font-size:13px;min-width:860px}
+.rgrid th{position:sticky;top:0;z-index:1;background:var(--chrome);padding:8px 10px}
+.rgrid th select{font:500 10.5px var(--mono);padding:2px 18px 2px 4px;border-radius:4px;margin-left:4px;max-width:120px;text-transform:none;letter-spacing:0}
+.rgrid td{padding:9px 10px;border-bottom:1px solid var(--rule)}
+.rgrid tr.r{cursor:pointer}
+.rgrid tr.r:hover td{background:var(--chrome)}
+.rgrid tr.r.open td{background:var(--ai-tint)}
+.rgrid tr.r.rej td{opacity:.55}
+.rgrid .q{font:400 13px/1.45 var(--quote);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.rgrid .tp{font-weight:600;font-size:12.5px;margin-bottom:3px}
+.rgrid .more{font:11px var(--mono);color:var(--faint);margin-left:6px}
+.rgrid td.detail{padding:0;background:var(--sunk)}
+.rgrid td.detail .row{border:0;border-radius:0;margin:0;box-shadow:none}
+.rgrid .rv{padding:3px 8px;font-size:12px}
+.rgrid .dec{display:flex;gap:4px}
+.rgrid .chk{font:500 11px var(--mono);white-space:nowrap}
+@media (max-width:1100px){.body{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:980px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .nav{position:static;height:auto;max-height:none;border-right:0;border-bottom:1px solid var(--rule);margin:0 -16px;padding:12px 16px}
+  .nav.collapsed .tree,.nav.collapsed .navnote{display:none}
+  .mainc{padding:14px 0 0}
+  .navtoggle{display:inline-flex!important}
+}
+.navtoggle{display:none;margin-top:8px}
 </style>
 
 <div class="wrap">
+<div class="app">
+  <aside class="nav" id="nav" aria-label="Matter documents"></aside>
+  <div class="mainc">
   <header class="top">
     <div>
       <div class="brand">
-        <div class="sticker" aria-hidden="true">EX<br>A</div>
+        <div class="sticker" aria-hidden="true">WW</div>
         <div>
           <h1>Witness Workbench</h1>
-          <div class="sub">Deposition prep from the record: what the witness swore, what the documents say, and questions tied to the exhibit. Every quote is checked against its source before a lawyer sees it.</div>
+          <div class="sub">Deposition prep from the record. Every quote checked against its source before a lawyer sees it.</div>
         </div>
       </div>
       <div class="matter" id="matter"></div>
@@ -291,6 +398,7 @@ td .q{font-family:var(--display)}
   <section class="pipe" id="pipe" aria-label="Pipeline"></section>
   <div class="progress" id="progress" aria-live="polite"></div>
 
+  <nav class="crumbs" id="crumbs" aria-label="Location"></nav>
   <nav class="tabs" role="tablist" id="tabs">
     <button class="tab" role="tab" data-tab="matrix" aria-selected="true">Contradiction matrix</button>
     <button class="tab" role="tab" data-tab="queue">Review queue <span class="n" id="nq">0</span></button>
@@ -316,6 +424,8 @@ td .q{font-family:var(--display)}
   </div>
 
   <p class="foot">Record: a public, fictional case from Harvey's open-source Legal Agent Benchmark (task <span class="mono">build-litigation-case-timeline</span>), used unmodified. Prototype; not client data and not legal advice. Built by Houman Shadab.</p>
+  </div>
+</div>
 </div>
 
 <script type="application/json" id="record-data">__RECORD__</script>
@@ -413,7 +523,9 @@ function renderPipe(){
 
 // ---------- matrix
 function citeBtn(doc, para, quote){
-  return h("button",{class:"citebtn",type:"button",onclick:function(){ openViewer(doc,para,quote); }}, "¶ "+WW.cite(RECORD,doc,para));
+  var d=docOf(doc), t=d&&d.paras[para-1]; var tip=t?("¶"+para+"  "+(t.length>260?t.slice(0,257)+"…":t)):"";
+  var c=d&&d.ctx&&d.ctx[para-1], label=(c&&c.bates?c.bates:(d?d.short:doc))+" ¶"+para;
+  return h("button",{class:"citebtn",type:"button",title:WW.cite(RECORD,doc,para)+(tip?"\n"+tip:""),onclick:function(){ openViewer(doc,para,quote); }}, label);
 }
 function vbadge(kind, foundPara){ var t=KIND_LABEL[kind]||kind; if(kind==="wrong_pin"&&foundPara) t+=" (found at ¶"+foundPara+")"; return h("span",{class:"vb v-"+kind},t); }
 function setReview(id, val){
@@ -456,17 +568,46 @@ function rowEl(r){
   return el;
 }
 function renderMatrix(main){
-  var rows=state.result.rows;
-  var f=state.filter;
-  var shown=rows.filter(function(r){ if(f==="findings") return r.status==="contradicts"||r.status==="qualifies";
-    if(f==="contradicts") return r.status==="contradicts"; if(f==="held") return r.check!=="verified"; return true; });
+  var rows=state.result.rows, f=state.filter, q=(state.q||"").toLowerCase(), fs=state.fstat||"", fc=state.fcheck||"";
+  var shown=rows.filter(function(r){ if(f==="findings" && !(r.status==="contradicts"||r.status==="qualifies")) return false;
+    if(f==="contradicts" && r.status!=="contradicts") return false; if(f==="held" && r.check==="verified") return false;
+    if(fs && r.status!==fs) return false; if(fc && r.check!==fc) return false;
+    if(q && (r.topic+" "+r.quote+" "+r.evidence.map(function(e){return e.quote;}).join(" ")).toLowerCase().indexOf(q)<0) return false; return true; });
   var order={contradicts:0,qualifies:1,consistent:2,no_support:3,missing:4}, mo={high:0,medium:1,low:2};
   shown.sort(function(a,b){ return (order[a.status]-order[b.status]) || ((mo[a.materiality]||3)-(mo[b.materiality]||3)) || (parseInt(a.id.slice(1))-parseInt(b.id.slice(1))); });
   var chips=[["all","All "+rows.length],["findings","Findings"],["contradicts","Contradictions"],["held","Needs attention"]].map(function(c){
     return h("button",{class:"chip",type:"button","aria-pressed":state.filter===c[0]?"true":"false",onclick:function(){state.filter=c[0];render();}},c[1]); });
+  var search=h("input",{type:"search",placeholder:"Search topics and quotes",value:state.q||"","aria-label":"Search the matrix",
+    oninput:function(e){ state.q=e.target.value; var pos=e.target.selectionStart; render(); var el=document.querySelector(".gridtools input[type=search]"); if(el){ el.focus(); try{el.setSelectionRange(pos,pos);}catch(_){} } }});
+  var sSel=h("select",{"aria-label":"Filter by status",onchange:function(e){state.fstat=e.target.value;render();}},
+    [["","All"],["contradicts","Contradicts"],["qualifies","Qualifies"],["consistent","Consistent"],["no_support","No support"]].map(function(o){ return h("option",{value:o[0]},o[1]); }));
+  sSel.value=fs;
+  var cSel=h("select",{"aria-label":"Filter by check",onchange:function(e){state.fcheck=e.target.value;render();}},
+    [["","All"],["verified","Verified"],["partial","Partial"],["held","Held"]].map(function(o){ return h("option",{value:o[0]},o[1]); }));
+  cSel.value=fc;
+  var body=[];
+  shown.forEach(function(r){
+    var rev=state.review[r.id], ev=r.evidence[0], open=state.sel===r.id;
+    var dec=h("div",{class:"dec"},
+      h("button",{class:"rv acc",type:"button","aria-pressed":rev==="accept"?"true":"false",onclick:function(e){e.stopPropagation();setReview(r.id,"accept");}},"Accept"),
+      h("button",{class:"rv rej",type:"button","aria-pressed":rev==="reject"?"true":"false",onclick:function(e){e.stopPropagation();setReview(r.id,"reject");}},"Reject"));
+    body.push(h("tr",{class:"r"+(open?" open":"")+(rev==="reject"?" rej":""),tabindex:"0","aria-expanded":open?"true":"false",
+        onclick:function(){ state.sel=open?null:r.id; render(); },
+        onkeydown:function(e){ if(e.key==="Enter"){ state.sel=open?null:r.id; render(); } }},
+      h("td",{class:"mono",style:"color:var(--faint)"},r.id),
+      h("td",null, h("div",{class:"tp"},r.topic), h("div",{class:"q"},"“"+r.quote+"”"), h("span",{onclick:function(e){e.stopPropagation();}}, citeBtn(state.run.witness, r.para, r.quote))),
+      h("td",null, ev?[h("div",{class:"q"},"“"+ev.quote+"”"), h("span",{onclick:function(e){e.stopPropagation();}}, citeBtn(ev.doc, ev.foundPara||ev.para, ev.quote)), r.evidence.length>1?h("span",{class:"more"},"+"+(r.evidence.length-1)+" more"):null]:h("span",{class:"claim"},"No record passage")),
+      h("td",null, h("span",{class:"pill st-"+r.status}, STATUS_LABEL[r.status]||r.status), r.materiality?h("div",{class:"mat",style:"margin-top:5px"},r.materiality):null),
+      h("td",null, h("span",{class:"chk rc-"+r.check}, r.check==="verified"?"✓ Verified":r.check==="partial"?"! Partial":"✕ Held")),
+      h("td",null, dec)));
+    if(open) body.push(h("tr",null, h("td",{class:"detail",colspan:"6"}, rowEl(r))));
+  });
   main.replaceChildren(
-    h("div",{class:"filters"}, chips, h("span",{class:"legend"}, "Claude proposes. The checker verifies every quote. You decide.")),
-    shown.length?h("div",{class:"rows"}, shown.map(rowEl)):h("div",{class:"empty"},"Nothing matches this filter."));
+    h("div",{class:"gridtools"}, chips, search, h("span",{class:"legend"}, "Click a row for analysis and questions. Claude proposes, the checker verifies, you decide.")),
+    shown.length?h("div",{class:"rgrid"}, h("table",null,
+      h("thead",null,h("tr",null, h("th",{style:"width:44px"},"ID"), h("th",{style:"width:31%"},"Sworn testimony"), h("th",{style:"width:31%"},"Confronting record"),
+        h("th",null,"Status", sSel), h("th",null,"Check", cSel), h("th",null,"Decision"))),
+      h("tbody",null, body))):h("div",{class:"empty"},"Nothing matches this filter."));
 }
 
 // ---------- review queue
@@ -615,6 +756,70 @@ function renderBrief(main){
     h("div",{class:"rows"},rows)));
 }
 
+
+// ---------- matter navigator (left pane)
+var DRIVE = { folder:"https://drive.google.com/drive/folders/1lVJY3tYDmU84oQigJd3NmXxHPJcei1bu",
+  "em-hys":"https://docs.google.com/document/d/1W_kZxD95RawLw_j2KwZTvJS5XYF4NaJcW3Q_0jKdJU8/edit",
+  "em-si":"https://docs.google.com/document/d/1ayNSw_mv0-AuUIzQYzfmS5vh2ovGCJpFTM6jYthQv-c/edit",
+  "breach":"https://docs.google.com/document/d/1wVM9nhA5zP35uEKKq8rdkNiX8UbYfWAEyH7u6ZKdz_4/edit",
+  "term":"https://docs.google.com/document/d/1NGFXR0CcobOeiZ8QcQOgWlkqNjOdmRJu-ddycIaR-CM/edit",
+  "resp":"https://docs.google.com/document/d/1ArlYi7yyHy_4cxoIUDi4wd2ZnlOppgWR5I-7uqRrrkE/edit",
+  "qalog":"https://docs.google.com/spreadsheets/d/183tqejoyVcUvafLwI4lZJJ5pOpSXa2PmG9hit2e0jtw/edit",
+  "em-sfq":"https://docs.google.com/document/d/1OP68Ib3LtB2gg3TT-vo2UM7Pz8acjW1woAekLTstCqk/edit",
+  chronology:"https://docs.google.com/spreadsheets/d/1PxdePq7oiXtdKWosLQG5Xdpwa41jspuC0ZxFai91UyQ/edit" };
+var FOLDERS = [
+  {name:"Production 1", docs:["em-hys","em-si","breach","term","resp","qalog"]},
+  {name:"Production 2", docs:["em-sfq"], isNew:true},
+  {name:"Contract", docs:["eda"]},
+  {name:"Testimony", docs:["dep-holcomb","dep-fong"]},
+  {name:"Pleadings and orders", docs:["compl","answer","sched"], closed:true},
+  {name:"Expert reports", docs:["buckley","chakrabarti"], closed:true}
+];
+var ICON = { email:"M2 4h12v8H2z M2 4l6 5 6-5", correspondence:"M3 2h7l3 3v9H3z M10 2v3h3", contract:"M3 2h7l3 3v9H3z M5 8h6 M5 11h4",
+  log:"M2 3h12v10H2z M2 6h12 M6 6v7", testimony:"M3 2h10v12H3z M5 5h6 M5 8h6 M5 11h3", pleading:"M3 2h10v12H3z M5 5h6 M5 8h6",
+  order:"M3 2h10v12H3z M5 6h6 M5 9h6", expert:"M3 2h10v12H3z M5 11l2-3 2 2 2-4", sheet:"M2 3h12v10H2z M2 6h12 M2 9h12 M6 3v10" };
+function svgIcon(kind){ var ns="http://www.w3.org/2000/svg", s=document.createElementNS(ns,"svg"); s.setAttribute("viewBox","0 0 16 16"); s.setAttribute("class","ic"); s.setAttribute("aria-hidden","true");
+  var p=document.createElementNS(ns,"path"); p.setAttribute("d",ICON[kind]||ICON.correspondence); p.setAttribute("fill","none"); p.setAttribute("stroke","currentColor"); p.setAttribute("stroke-width","1.3"); p.setAttribute("stroke-linejoin","round"); s.append(p); return s; }
+function batesRange(d){ var b=d.bates||[]; if(!b.length) return ""; if(b.length===1) return b[0]; var a=b[0], z=b[b.length-1], pre=a.replace(/\d+$/,""); return a+" to "+(z.indexOf(pre)===0?z.slice(pre.length):z); }
+function docLine(d){ var r=batesRange(d); if(r) return r; var m=d.title.match(/\(([^)]+)\)\s*$/); return m?m[1]:d.kind; }
+function navOpen(id){
+  if(state.tab==="audit"||state.tab==="how"||state.tab==="outline"){ state.tab="matrix"; render(); }
+  openViewer(id, 1, null); renderNav();
+}
+function renderNav(){
+  var m=RECORD.matter, cur=state.viewer.doc;
+  var tree=h("div",{class:"tree"}, FOLDERS.map(function(f){
+    var items=f.docs.map(docOf).filter(Boolean);
+    var det=h("details",f.closed?null:{open:true}, h("summary",null, f.name, f.isNew?h("span",{class:"badge new"},"New"):null, h("span",{class:"c"},String(items.length))),
+      items.map(function(d){
+        var url=DRIVE[d.id];
+        return h("div",{class:"di"+(cur===d.id?" on":""),role:"button",tabindex:"0",title:d.title,
+            onclick:function(){navOpen(d.id);}, onkeydown:function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); navOpen(d.id);} }},
+          svgIcon(d.kind),
+          h("span",{class:"t"}, d.short, d.privileged?h("span",{class:"badge priv"},"Priv. log"):null, h("span",{class:"b"},docLine(d))),
+          url?h("a",{class:"ext",href:url,target:"_blank",rel:"noopener",title:"Open in Google Drive","aria-label":"Open "+d.short+" in Google Drive",onclick:function(e){e.stopPropagation();}},"↗"):h("span"));
+      }));
+    return det;
+  }), h("details",{open:true}, h("summary",null,"Work product", h("span",{class:"c"},"1")),
+      h("a",{class:"di",href:DRIVE.chronology,target:"_blank",rel:"noopener",title:"Case chronology in Google Sheets"}, svgIcon("sheet"),
+        h("span",{class:"t"},"Case chronology", h("span",{class:"b"},"Google Sheets · 31 cited rows")), h("span",{class:"ext"},"↗"))));
+  var nav=$("nav"); var collapsed=nav.classList.contains("collapsed");
+  nav.replaceChildren(
+    h("div",{class:"mx"}, h("div",{class:"k"},"Matter"), h("b",null,"Harborview v. Greenleaf"), h("div",{class:"m"}, m.court+" · "+m.number),
+      h("a",{href:DRIVE.folder,target:"_blank",rel:"noopener"},"↗ Matter folder in Google Drive"),
+      h("button",{class:"btn navtoggle",type:"button",onclick:function(){ nav.classList.toggle("collapsed"); }}, collapsed?"Show documents":"Hide documents")),
+    tree,
+    h("div",{class:"navnote"},"↗ opens the shared Google Drive copy. Clicking a document opens it here with paragraph numbers. Public, fictional benchmark record."));
+}
+var TAB_LABEL={matrix:"Contradiction matrix",queue:"Review queue",outline:"Deposition outline",brief:"Brief cite check",audit:"Audit trail",how:"How it works"};
+function renderCrumbs(){
+  var v=state.viewer, d=v.doc?docOf(v.doc):null, sep=function(){ return h("span",{class:"sep"},"›"); };
+  var parts=[h("span",null,"Harborview v. Greenleaf"), sep(), h("span",null,"Witness: "+WITNESS_NAME[state.run.witness]), sep(), h("b",null,TAB_LABEL[state.tab]||state.tab)];
+  if(d && !$("viewer").hidden){ parts.push(sep(), h("span",null, d.short+(v.para?" ¶"+v.para:""))); }
+  parts.push(h("span",{class:"lens"}, state.run.lens==="defend"?"Lens: preparing our witness":"Lens: examining (adverse)"));
+  $("crumbs").replaceChildren.apply($("crumbs"), parts);
+}
+
 // ---------- viewer
 function openViewer(doc, para, quote){
   state.viewer={doc:doc, para:para, quote:quote, all:false}; renderViewer();
@@ -626,7 +831,10 @@ function renderViewer(){
   sel.value=d?d.id:"";
   if(!d){ $("vtitle").textContent="Select a citation"; $("vmeta").textContent="Click any pin cite to open the document at that paragraph."; $("vpriv").replaceChildren(); $("vbody").replaceChildren(h("div",{class:"claim",style:"padding:10px 0"},"The record has "+RECORD.docs.length+" documents. Pin cites in the matrix open here, with the quoted words highlighted.")); return; }
   $("vtitle").textContent=d.title;
-  $("vmeta").textContent=(v.para?WW.cite(RECORD,d.id,v.para)+" · ":"")+d.kind+(d.bates&&d.bates.length?" · "+d.bates[0]+(d.bates.length>1?" to "+d.bates[d.bates.length-1]:""):"");
+  var md=[["Cite", v.para?WW.cite(RECORD,d.id,v.para):"Whole document"],["Type", d.kind],["Bates", batesRange(d)||"Not Bates-stamped"],["Paragraphs", String(d.paras.length)],["Privilege", d.privileged?"On privilege log":"Not logged"]];
+  var dl=h("dl",{class:"vmeta"}); md.forEach(function(x){ dl.append(h("dt",null,x[0]), h("dd",null,x[1])); });
+  if(DRIVE[d.id]) dl.append(h("dt",null,"Drive"), h("dd",null, h("a",{href:DRIVE[d.id],target:"_blank",rel:"noopener"},"Open shared copy ↗")));
+  $("vmeta").replaceChildren(dl);
   if(d.privileged) $("vpriv").replaceChildren(h("div",{class:"privbar"},"◆ Privilege log: "+RECORD.privilege_log[0].entry)); else $("vpriv").replaceChildren();
   var n=v.para||1, from=v.all?1:Math.max(1,n-3), to=v.all?d.paras.length:Math.min(d.paras.length,n+3);
   var out=[];
@@ -636,7 +844,8 @@ function renderViewer(){
   }
   $("vbody").replaceChildren.apply($("vbody"), out);
   $("vall").textContent=v.all?"Show nearby only":"Show whole document";
-  var tgt=document.getElementById("vp-"+n); if(tgt&&v.para) tgt.scrollIntoView({block:"center"});
+  var tgt=document.getElementById("vp-"+n); if(tgt&&v.para) tgt.scrollIntoView({block:"nearest"});
+  if($("nav").childNodes.length){ renderNav(); renderCrumbs(); }
 }
 
 // ---------- render
@@ -654,6 +863,7 @@ function render(){
   else if(state.tab==="audit") renderAudit(main);
   else renderHow(main);
   $("witness").value=state.run.witness; $("lens").value=state.run.lens||"examine";
+  renderNav(); renderCrumbs();
 }
 function selectRun(r){ state.run=r; state.result=null; state.viewer={doc:null,para:null,quote:null,all:false}; recompute(); renderRunSelect(); render(); renderViewer(); }
 
@@ -767,6 +977,7 @@ $("vclose").addEventListener("click", function(){ $("viewer").setAttribute("data
   SAMPLE.retrievalRecall={hit:hit,total:tot}; SAMPLE.selectedCount=total; SAMPLE.retrievalLog=rlog;
 })();
 
+try{ if(window.matchMedia("(max-width:980px)").matches) $("nav").classList.add("collapsed"); }catch(e){}
 renderMatter(); renderRunSelect(); recompute(); render(); renderViewer();
 
 (async function(){
