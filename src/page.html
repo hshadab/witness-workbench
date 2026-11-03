@@ -1,4 +1,6 @@
+<meta charset="utf-8">
 <title>Witness Workbench</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -340,9 +342,9 @@ blockquote,.bclaim,.oitem li,.para{font-family:var(--quote)}
 .gridtools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
 .gridtools input[type=search]{border:1px solid var(--rule);border-radius:6px;padding:6px 10px;background:var(--surface);min-width:220px}
 .rgrid{overflow:auto;background:var(--surface);border:1px solid var(--rule);border-radius:8px;max-height:calc(100vh - 150px)}
-.rgrid table{font-size:13px;min-width:860px}
+.rgrid table{font-size:13px;min-width:680px;table-layout:fixed}
 .rgrid th{position:sticky;top:0;z-index:1;background:var(--chrome);padding:8px 10px}
-.rgrid th select{font:500 10.5px var(--mono);padding:2px 18px 2px 4px;border-radius:4px;margin-left:4px;max-width:120px;text-transform:none;letter-spacing:0}
+.rgrid th select{display:block;font:500 10.5px var(--mono);padding:2px 16px 2px 4px;border-radius:4px;margin-top:4px;width:100%;max-width:120px;text-transform:none;letter-spacing:0}
 .rgrid td{padding:9px 10px;border-bottom:1px solid var(--rule)}
 .rgrid tr.r{cursor:pointer}
 .rgrid tr.r:hover td{background:var(--chrome)}
@@ -354,9 +356,13 @@ blockquote,.bclaim,.oitem li,.para{font-family:var(--quote)}
 .rgrid td.detail{padding:0;background:var(--sunk)}
 .rgrid td.detail .row{border:0;border-radius:0;margin:0;box-shadow:none}
 .rgrid .rv{padding:3px 8px;font-size:12px}
-.rgrid .dec{display:flex;gap:4px}
+.rgrid .dec{display:flex;flex-wrap:wrap;gap:4px}
 .rgrid .chk{font:500 11px var(--mono);white-space:nowrap}
-@media (max-width:1100px){.body{grid-template-columns:minmax(0,1fr)}}
+@media (min-width:981px) and (max-width:1400px){
+  .body{grid-template-columns:minmax(0,1fr)}
+  .viewer{position:fixed;top:12px;right:12px;bottom:12px;width:min(440px, 46vw);max-height:none;z-index:20;box-shadow:-12px 0 32px rgba(0,0,0,.18)}
+  .viewer[data-open="false"]{display:none}
+}
 @media (max-width:980px){
   .app{grid-template-columns:minmax(0,1fr)}
   .nav{position:static;height:auto;max-height:none;border-right:0;border-bottom:1px solid var(--rule);margin:0 -16px;padding:12px 16px}
@@ -365,6 +371,65 @@ blockquote,.bclaim,.oitem li,.para{font-family:var(--quote)}
   .navtoggle{display:inline-flex!important}
 }
 .navtoggle{display:none;margin-top:8px}
+
+/* ===== phone layout ===== */
+@media (max-width:760px){
+  .wrap{padding-left:max(12px, env(safe-area-inset-left, 0px));padding-right:max(12px, env(safe-area-inset-right, 0px))}
+  .nav{margin:0 -12px;padding:12px}
+  .top{padding:12px;gap:10px}
+  .sub{display:none}
+  .controls{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .controls .field{min-width:0}
+  .controls .field:nth-child(3),.controls #go,.controls #stop,.controls .check{grid-column:1/-1}
+  select{max-width:100%;width:100%}
+  .controls #go{width:100%}
+  .pipe{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .stage{padding:8px 9px;border-right:1px solid var(--rule)!important;border-bottom:1px solid var(--rule)}
+  .stage:nth-child(3n){border-right:0!important}
+  .stage .d{display:none}
+  .stage .v{font-size:14px}
+  .stage .who{position:static;display:inline-block;margin-bottom:4px}
+  .crumbs>span:not(.lens):not(:last-of-type),.crumbs>.sep{display:none}
+  .crumbs b{display:inline}
+  .crumbs .lens{margin-left:0;width:100%}
+  .tabs{scrollbar-width:none}
+  .tab{padding:9px 11px}
+  .gridtools input[type=search]{min-width:0;width:100%;order:5}
+  .gridtools .legend{display:none}
+  .rgrid{max-height:none;overflow:visible;background:none;border:0}
+  .rgrid table{min-width:0}
+  .rgrid thead{display:none}
+  .rgrid table,.rgrid tbody{display:block}
+  .rgrid tr.r{display:grid;grid-template-columns:auto 1fr auto;gap:4px 8px;align-items:center;background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+  .rgrid tr.r td{display:block;border:0;padding:0;background:none!important}
+  .rgrid td.cid{grid-column:1;grid-row:1}
+  .rgrid td.cst{grid-column:2;grid-row:1;display:flex;gap:8px;align-items:center}
+  .rgrid td.cst .mat{margin-top:0!important}
+  .rgrid td.cck{grid-column:3;grid-row:1;text-align:right}
+  .rgrid td[data-label]{grid-column:1/-1;margin-top:6px}
+  .rgrid td[data-label]::before,.tablewrap td[data-label]::before{content:attr(data-label);display:block;font:500 10px/1.6 var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--faint)}
+  .rgrid td.cdec{grid-column:1/-1;margin-top:8px}
+  .rgrid .dec .rv{flex:1;padding:7px 8px}
+  .rgrid tr.r.open{border-color:var(--accent)}
+  .rgrid tr:not(.r){display:block;margin:-6px 0 10px}
+  .rgrid td.detail{display:block;border-radius:0 0 8px 8px}
+  .rgrid .q{-webkit-line-clamp:4}
+  .tablewrap{background:none;border:0;box-shadow:none}
+  .tablewrap table,.tablewrap tbody,.tablewrap tr,.tablewrap td{display:block}
+  .tablewrap thead{display:none}
+  .tablewrap tr{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+  .tablewrap td{border:0;padding:4px 0}
+  .row .cell{padding:12px}
+  .paper,.prose{padding:16px}
+  .bbar .btn{flex:1}
+  .viewer .vhead{padding:10px 12px}
+  .vmeta{grid-template-columns:auto minmax(0,1fr)}
+  .vmeta dt:nth-of-type(n+2):not(:last-of-type),.vmeta dd:nth-of-type(n+2):not(:last-of-type){display:none}
+  .vhead select{display:none}
+  .vhead h3{font-size:14px}
+  .rv,.btn,.chip,.citebtn{min-height:32px}
+  .di{padding-top:8px;padding-bottom:8px}
+}
 </style>
 
 <div class="wrap">
@@ -594,19 +659,19 @@ function renderMatrix(main){
     body.push(h("tr",{class:"r"+(open?" open":"")+(rev==="reject"?" rej":""),tabindex:"0","aria-expanded":open?"true":"false",
         onclick:function(){ state.sel=open?null:r.id; render(); },
         onkeydown:function(e){ if(e.key==="Enter"){ state.sel=open?null:r.id; render(); } }},
-      h("td",{class:"mono",style:"color:var(--faint)"},r.id),
-      h("td",null, h("div",{class:"tp"},r.topic), h("div",{class:"q"},"“"+r.quote+"”"), h("span",{onclick:function(e){e.stopPropagation();}}, citeBtn(state.run.witness, r.para, r.quote))),
-      h("td",null, ev?[h("div",{class:"q"},"“"+ev.quote+"”"), h("span",{onclick:function(e){e.stopPropagation();}}, citeBtn(ev.doc, ev.foundPara||ev.para, ev.quote)), r.evidence.length>1?h("span",{class:"more"},"+"+(r.evidence.length-1)+" more"):null]:h("span",{class:"claim"},"No record passage")),
-      h("td",null, h("span",{class:"pill st-"+r.status}, STATUS_LABEL[r.status]||r.status), r.materiality?h("div",{class:"mat",style:"margin-top:5px"},r.materiality):null),
-      h("td",null, h("span",{class:"chk rc-"+r.check}, r.check==="verified"?"✓ Verified":r.check==="partial"?"! Partial":"✕ Held")),
-      h("td",null, dec)));
+      h("td",{class:"mono cid",style:"color:var(--faint)"},r.id),
+      h("td",{"data-label":"Sworn testimony"}, h("div",{class:"tp"},r.topic), h("div",{class:"q"},"“"+r.quote+"”"), h("span",{onclick:function(e){e.stopPropagation();}}, citeBtn(state.run.witness, r.para, r.quote))),
+      h("td",{"data-label":"Confronting record"}, ev?[h("div",{class:"q"},"“"+ev.quote+"”"), h("span",{onclick:function(e){e.stopPropagation();}}, citeBtn(ev.doc, ev.foundPara||ev.para, ev.quote)), r.evidence.length>1?h("span",{class:"more"},"+"+(r.evidence.length-1)+" more"):null]:h("span",{class:"claim"},"No record passage")),
+      h("td",{class:"cst"}, h("span",{class:"pill st-"+r.status}, STATUS_LABEL[r.status]||r.status), r.materiality?h("div",{class:"mat",style:"margin-top:5px"},r.materiality):null),
+      h("td",{class:"cck"}, h("span",{class:"chk rc-"+r.check}, r.check==="verified"?"✓ Verified":r.check==="partial"?"! Partial":"✕ Held")),
+      h("td",{class:"cdec"}, dec)));
     if(open) body.push(h("tr",null, h("td",{class:"detail",colspan:"6"}, rowEl(r))));
   });
   main.replaceChildren(
     h("div",{class:"gridtools"}, chips, search, h("span",{class:"legend"}, "Click a row for analysis and questions. Claude proposes, the checker verifies, you decide.")),
     shown.length?h("div",{class:"rgrid"}, h("table",null,
-      h("thead",null,h("tr",null, h("th",{style:"width:44px"},"ID"), h("th",{style:"width:31%"},"Sworn testimony"), h("th",{style:"width:31%"},"Confronting record"),
-        h("th",null,"Status", sSel), h("th",null,"Check", cSel), h("th",null,"Decision"))),
+      h("thead",null,h("tr",null, h("th",{style:"width:42px"},"ID"), h("th",{style:"width:30%"},"Sworn testimony"), h("th",{style:"width:30%"},"Confronting record"),
+        h("th",{style:"width:14%"},"Status", sSel), h("th",{style:"width:12%"},"Check", cSel), h("th",null,"Decision"))),
       h("tbody",null, body))):h("div",{class:"empty"},"Nothing matches this filter."));
 }
 
@@ -618,11 +683,11 @@ function renderQueue(main){
   main.replaceChildren(intro, h("div",{class:"tablewrap"}, h("table",null,
     h("thead",null,h("tr",null,h("th",null,"Row"),h("th",null,"Issue"),h("th",null,"Quote"),h("th",null,"Cited"),h("th",null,"What to do"))),
     h("tbody",null, ex.map(function(e){
-      return h("tr",null, h("td",{class:"mono"},e.row+(e.side==="testimony"?" · testimony":"")),
-        h("td",null, h("div",{style:"display:flex;flex-wrap:wrap;gap:6px;align-items:center"}, vbadge(e.kind, e.foundPara), e.injected?h("span",{class:"planted",style:"margin-left:0"},"PLANTED TEST"):null)),
-        h("td",{class:"q"},"“"+e.quote+"”"),
-        h("td",null, citeBtn(e.doc, e.para, e.quote)),
-        h("td",null, KIND_ACTION[e.kind]||""));
+      return h("tr",null, h("td",{class:"mono","data-label":"Row"},e.row+(e.side==="testimony"?" · testimony":"")),
+        h("td",{"data-label":"Issue"}, h("div",{style:"display:flex;flex-wrap:wrap;gap:6px;align-items:center"}, vbadge(e.kind, e.foundPara), e.injected?h("span",{class:"planted",style:"margin-left:0"},"PLANTED TEST"):null)),
+        h("td",{class:"q","data-label":"Quote"},"“"+e.quote+"”"),
+        h("td",{"data-label":"Cited"}, citeBtn(e.doc, e.para, e.quote)),
+        h("td",{"data-label":"What to do"}, KIND_ACTION[e.kind]||""));
     })))));
 }
 
@@ -807,7 +872,7 @@ function renderNav(){
   nav.replaceChildren(
     h("div",{class:"mx"}, h("div",{class:"k"},"Matter"), h("b",null,"Harborview v. Greenleaf"), h("div",{class:"m"}, m.court+" · "+m.number),
       h("a",{href:DRIVE.folder,target:"_blank",rel:"noopener"},"↗ Matter folder in Google Drive"),
-      h("button",{class:"btn navtoggle",type:"button",onclick:function(){ nav.classList.toggle("collapsed"); }}, collapsed?"Show documents":"Hide documents")),
+      h("button",{class:"btn navtoggle",type:"button",onclick:function(e){ var c=nav.classList.toggle("collapsed"); e.currentTarget.textContent=c?"Show documents":"Hide documents"; }}, collapsed?"Show documents":"Hide documents")),
     tree,
     h("div",{class:"navnote"},"↗ opens the shared Google Drive copy. Clicking a document opens it here with paragraph numbers. Public, fictional benchmark record."));
 }
@@ -822,8 +887,8 @@ function renderCrumbs(){
 
 // ---------- viewer
 function openViewer(doc, para, quote){
-  state.viewer={doc:doc, para:para, quote:quote, all:false}; renderViewer();
-  $("viewer").setAttribute("data-open","true");
+  state.viewer={doc:doc, para:para, quote:quote, all:false};
+  $("viewer").setAttribute("data-open","true"); renderViewer();
 }
 function renderViewer(){
   var v=state.viewer, d=v.doc?docOf(v.doc):null;
@@ -844,7 +909,7 @@ function renderViewer(){
   }
   $("vbody").replaceChildren.apply($("vbody"), out);
   $("vall").textContent=v.all?"Show nearby only":"Show whole document";
-  var tgt=document.getElementById("vp-"+n); if(tgt&&v.para) tgt.scrollIntoView({block:"nearest"});
+  var tgt=document.getElementById("vp-"+n), vb=$("vbody"); if(tgt&&v.para){ vb.scrollTop=Math.max(0, tgt.offsetTop-vb.offsetTop-vb.clientHeight/4); }
   if($("nav").childNodes.length){ renderNav(); renderCrumbs(); }
 }
 
@@ -864,6 +929,7 @@ function render(){
   else renderHow(main);
   $("witness").value=state.run.witness; $("lens").value=state.run.lens||"examine";
   renderNav(); renderCrumbs();
+  var at=document.querySelector('.tab[aria-selected="true"]'); if(at&&at.scrollIntoView&&window.innerWidth<760){ try{ at.scrollIntoView({block:"nearest",inline:"center"}); }catch(e){} }
 }
 function selectRun(r){ state.run=r; state.result=null; state.viewer={doc:null,para:null,quote:null,all:false}; recompute(); renderRunSelect(); render(); renderViewer(); }
 
