@@ -113,20 +113,39 @@ test("each email is one chunk, with its paragraph numbers kept", () => {
   assert.ok(emails.every((c) => c.paras.length >= 1));
 });
 
-test("retrieval finds at least 18 of the 21 passages the sample analysis relies on", () => {
+test("retrieval finds all 21 passages the sample analysis relies on", () => {
   const chunks = WW.chunkRecord(RECORD);
   const index = WW.buildIndex(WW.evidencePool(RECORD));
   const witness = WW.docById(RECORD, SAMPLE.witness);
   let hit = 0, total = 0;
   for (const item of SAMPLE.extraction) {
-    const got = WW.retrieveFor(index, chunks, item, witness, 7).chunks;
+    const got = WW.retrieveFor(index, chunks, item, witness, 7, WW.retrievalOpts(RECORD)).chunks;
     for (const e of SAMPLE.analysis.find((a) => a.id === item.id).evidence) {
       total++;
       if (got.some((c) => c.doc === e.doc && c.paras.includes(e.para))) hit++;
     }
   }
   assert.equal(total, 21);
-  assert.ok(hit >= 18, `recall ${hit}/${total}`);
+  assert.equal(hit, 21, `recall ${hit}/${total}`);
+});
+
+test("search alone, without the context rules, finds 18 of 21 (the before number)", () => {
+  const chunks = WW.chunkRecord(RECORD);
+  const index = WW.buildIndex(WW.evidencePool(RECORD));
+  const witness = WW.docById(RECORD, SAMPLE.witness);
+  let hit = 0;
+  for (const item of SAMPLE.extraction) {
+    const got = WW.retrieveFor(index, chunks, item, witness, 7).chunks;
+    for (const e of SAMPLE.analysis.find((a) => a.id === item.id).evidence)
+      if (got.some((c) => c.doc === e.doc && c.paras.includes(e.para))) hit++;
+  }
+  assert.equal(hit, 18);
+});
+
+test("governing clauses are named at intake, not chosen from the answer key", () => {
+  const g = RECORD.matter.governing;
+  assert.ok(Array.isArray(g) && g.length === 4);
+  assert.ok(g.every((r) => r.doc === "eda" && r.label));
 });
 
 // ---- prompts ---------------------------------------------------------------
@@ -136,7 +155,7 @@ test("prompts fit well under the 256 KB request limit", () => {
   const index = WW.buildIndex(WW.evidencePool(RECORD));
   const witness = WW.docById(RECORD, SAMPLE.witness);
   const selected = {};
-  for (const item of SAMPLE.extraction) selected[item.id] = WW.retrieveFor(index, chunks, item, witness, 7).chunks;
+  for (const item of SAMPLE.extraction) selected[item.id] = WW.retrieveFor(index, chunks, item, witness, 7, WW.retrievalOpts(RECORD)).chunks;
   for (const p of [WW.extractPrompt(RECORD, "dep-holcomb", 12), WW.extractPrompt(RECORD, "dep-fong", 12),
     WW.comparePrompt(RECORD, SAMPLE.extraction, selected, "examine")]) {
     assert.ok(Buffer.byteLength(p) < 128 * 1024);

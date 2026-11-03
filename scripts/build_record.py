@@ -108,7 +108,9 @@ for fn,(id_,short,title,kind) in META.items():
     docs.append({"id":id_,"file":fn,"short":short,"title":title,"kind":kind,
                  "privileged": fn=="email-stanton-to-ivers.eml",
                  "bates":bates,"paras":ps, **({"ctx":ctx} if ctx else {})})
-json.dump({"matter":{"caption":"Harborview Distribution Partners, LLC v. Greenleaf Organics, Inc.","court":"D. Or.","number":"No. 3:24-cv-00613-MRH","client":"Greenleaf Organics, Inc. (defendant)","source":"Harvey Legal Agent Benchmark, task litigation-dispute-resolution/build-litigation-case-timeline (public, fictional record)"},
+json.dump({"matter":{"caption":"Harborview Distribution Partners, LLC v. Greenleaf Organics, Inc.","court":"D. Or.","number":"No. 3:24-cv-00613-MRH","client":"Greenleaf Organics, Inc. (defendant)","source":"Harvey Legal Agent Benchmark, task litigation-dispute-resolution/build-litigation-case-timeline (public, fictional record)",
+           # Named at intake by the lawyer: the clauses the dispute turns on.
+           "governing":[{"doc":"eda","para":31,"label":"§2.1 Appointment"},{"doc":"eda","para":35,"label":"§3.1 Exclusive rights"},{"doc":"eda","para":72,"label":"§9.2 Termination for cause"},{"doc":"eda","para":73,"label":"§9.3 Renewal and non-renewal"}]},
            "privilege_log":[{"doc":"em-si","entry":"Email from M. Stanton (CEO) to N. Ivers (outside counsel, Ashford Kline & Pryor), Jan. 3, 2023, re termination; produced at GL-PROD-007834 in the Sept. 30, 2024 production. Clawback under FRE 502(b) under consideration."}],
            "docs":docs}, OUT.open("w"), ensure_ascii=False, indent=0)
 for d in docs: print(f"{d['id']:12} {d['kind']:14} paras={len(d['paras']):3} chars={sum(map(len,d['paras'])):6} bates={d['bates'][:3]}{'...' if len(d['bates'])>3 else ''}")

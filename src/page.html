@@ -620,7 +620,7 @@ function renderPipe(){
   var stages=[
     {n:1, k:"Ingest", who:"code", v:RECORD.docs.length+" documents", d:CHUNKS.length+" excerpts, split by email and contract section. Document IDs and senders kept.", key:"record"},
     {n:2, k:"Testimony", who:"ai", v:m.items+" sworn statements", d:"Pulled from "+short+", each with an exact quote and pin cite.", key:"extract"},
-    {n:3, k:"Search", who:"code", v: rr ? rr.hit+" of "+rr.total+" key passages" : (excerpts!=null?excerpts:"0")+" excerpts", d:"Finds related passages in the emails, contract, letters and quality logs. Court filings left out.", key:"search"},
+    {n:3, k:"Search", who:"code", v: rr ? rr.hit+" of "+rr.total+" key passages" : (excerpts!=null?excerpts:"0")+" excerpts", d:"Keyword search of the evidence, plus the rest of each email thread and the key contract clauses.", key:"search"},
     {n:4, k:"Compare", who:"ai", v:m.findings+" findings", d:"Statements the documents contradict or qualify, with draft questions for the witness.", key:"compare"},
     {n:5, k:"Check", who:"code", v:m.verified+" of "+m.quotes+" quotes verified", d:"Matched word for word to the cited paragraph. "+m.rejected+" rejected, "+m.held+" held for privilege.", key:"check"},
     {n:6, k:"Review", who:"you", v:accepted+" of "+m.items+" accepted", d:"The attorney accepts or rejects each row. Only verified, accepted rows reach the outline.", key:"review"}
@@ -1032,7 +1032,7 @@ async function runLive(){
 
     var selected={}, retrieved={}, rlog={}, total=0, seen={};
     run.extraction.forEach(function(it){
-      var r=WW.retrieveFor(INDEX, CHUNKS, it, wdoc, 7);
+      var r=WW.retrieveFor(INDEX, CHUNKS, it, wdoc, 7, WW.retrievalOpts(RECORD));
       selected[it.id]=r.chunks; rlog[it.id]=r.log;
       retrieved[it.id]=[].concat.apply([], r.chunks.map(function(c){ return c.paras.map(function(p){ return {doc:c.doc, para:p}; }); }));
       r.chunks.forEach(function(c){ if(!seen[c.cid]){ seen[c.cid]=1; total++; } });
@@ -1097,7 +1097,7 @@ $("vclose").addEventListener("click", function(){ $("viewer").setAttribute("data
 (function(){
   var w=docOf(SAMPLE.witness), hit=0, tot=0, total=0, seen={}, rlog={};
   SAMPLE.extraction.forEach(function(it){
-    var r=WW.retrieveFor(INDEX, CHUNKS, it, w, 7); rlog[it.id]=r.log;
+    var r=WW.retrieveFor(INDEX, CHUNKS, it, w, 7, WW.retrievalOpts(RECORD)); rlog[it.id]=r.log;
     r.chunks.forEach(function(c){ if(!seen[c.cid]){ seen[c.cid]=1; total++; } });
     var a=SAMPLE.analysis.filter(function(x){return x.id===it.id;})[0]; if(!a) return;
     a.evidence.forEach(function(e){ tot++; if(r.chunks.some(function(c){ return c.doc===e.doc && c.paras.indexOf(+e.para)>=0; })) hit++; });

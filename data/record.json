@@ -4,7 +4,29 @@
 "court": "D. Or.",
 "number": "No. 3:24-cv-00613-MRH",
 "client": "Greenleaf Organics, Inc. (defendant)",
-"source": "Harvey Legal Agent Benchmark, task litigation-dispute-resolution/build-litigation-case-timeline (public, fictional record)"
+"source": "Harvey Legal Agent Benchmark, task litigation-dispute-resolution/build-litigation-case-timeline (public, fictional record)",
+"governing": [
+{
+"doc": "eda",
+"para": 31,
+"label": "§2.1 Appointment"
+},
+{
+"doc": "eda",
+"para": 35,
+"label": "§3.1 Exclusive rights"
+},
+{
+"doc": "eda",
+"para": 72,
+"label": "§9.2 Termination for cause"
+},
+{
+"doc": "eda",
+"para": 73,
+"label": "§9.3 Renewal and non-renewal"
+}
+]
 },
 "privilege_log": [
 {

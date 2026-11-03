@@ -139,9 +139,19 @@ var WW = (function () {
 
   // Retrieval for one assertion: the assertion and its testimony
   // paragraph as one query, plus each search phrase Claude proposed at
-  // extraction. Union, de-duplicated, capped.
-  function retrieveFor(index, chunks, item, witnessDoc, cap) {
-    cap = cap || 7;
+  // extraction. Union, de-duplicated, capped. Then two context rules a
+  // lawyer would apply on any matter:
+  //   thread   - an email is read with the message before and after it,
+  //              because a reply only makes sense next to what it answers
+  //   governing - the contract clauses named at intake (record.matter.
+  //              governing) travel with every assertion, because the
+  //              dispute turns on them even when the words don't match
+  function retrievalOpts(record) {
+    var g = (record && record.matter && record.matter.governing) || [];
+    return { thread: true, governing: g };
+  }
+  function retrieveFor(index, chunks, item, witnessDoc, cap, opts) {
+    cap = cap || 7; opts = opts || {};
     var sel = [], log = [];
     function add(hits, q) {
       var got = [];
@@ -153,6 +163,28 @@ var WW = (function () {
     var ctx = witnessDoc && witnessDoc.paras[item.para - 1] ? witnessDoc.paras[item.para - 1] : "";
     add(retrieve(index, item.claim + " " + item.quote + " " + ctx, 3), "assertion + testimony paragraph");
     (item.search || []).slice(0, 4).forEach(function (ph) { add(retrieve(index, ph, 2), ph); });
+    if (opts.thread) {
+      var t = [];
+      sel.slice().forEach(function (i) {
+        if (!chunks[i].ctx) return;
+        [i - 1, i + 1].forEach(function (j) {
+          if (chunks[j] && chunks[j].doc === chunks[i].doc && sel.indexOf(j) < 0) { sel.push(j); t.push(chunks[j].cid); }
+        });
+      });
+      log.push({ query: "rule: email thread context", added: t });
+    }
+    if (opts.governing && opts.governing.length) {
+      var g = [];
+      opts.governing.forEach(function (ref) {
+        for (var j = 0; j < chunks.length; j++) {
+          if (chunks[j].doc === ref.doc && chunks[j].paras.indexOf(ref.para) >= 0) {
+            if (sel.indexOf(j) < 0) { sel.push(j); g.push(chunks[j].cid); }
+            break;
+          }
+        }
+      });
+      log.push({ query: "rule: governing contract clauses", added: g });
+    }
     return { chunks: sel.map(function (i) { return chunks[i]; }), log: log };
   }
 
@@ -444,7 +476,7 @@ var WW = (function () {
   }
 
   return { checkBrief: checkBrief, figKey: figKey, norm: norm, verifyQuote: verifyQuote, cite: cite, docById: docById, tokens: tokens,
-    evidencePool: evidencePool, chunkRecord: chunkRecord, retrieveFor: retrieveFor,
+    evidencePool: evidencePool, chunkRecord: chunkRecord, retrieveFor: retrieveFor, retrievalOpts: retrievalOpts,
     buildIndex: buildIndex, retrieve: retrieve, extractPrompt: extractPrompt,
     comparePrompt: comparePrompt, assess: assess, LENS: LENS, FABRICATED: FABRICATED };
 })();
