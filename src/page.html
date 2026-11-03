@@ -463,6 +463,18 @@ blockquote,.bclaim,.oitem li,.para{font-family:var(--quote)}
   .statusline .skey{margin-left:0;width:100%}
   .statusline .sk{font-size:12px}
 }
+/* pipeline: step cards (restored, numbered like the deck) */
+.pipe{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;border:0;background:transparent;overflow:visible;margin:12px 0 0}
+.stage{border:1px solid var(--rule);border-radius:8px;background:var(--surface);border-top:3px solid #9AA3AD;padding:10px 12px 12px}
+.stage:last-child{border-right:1px solid var(--rule)}
+.stage:has(.who.ai){border-top-color:var(--accent)}
+.stage:has(.who.you){border-top-color:var(--lawyer-edge);background:var(--lawyer-tint)}
+.stage .who{position:static;display:inline-block}
+.stage .sn{font:600 15px/1.2 var(--display);margin-top:8px;color:var(--ink)}
+.stage .v{font:600 15px/1.25 var(--body);margin-top:3px;color:var(--ink);font-variant-numeric:tabular-nums}
+.stage .d{display:block;font-size:12px;line-height:1.4;color:var(--muted);margin-top:5px}
+@media (max-width:1100px){.pipe{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:640px){.pipe{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.stage{padding:8px 9px;border-right:1px solid var(--rule)!important;border-bottom:1px solid var(--rule)}.stage .d{display:block;font-size:11.5px}.stage .v{font-size:13.5px}}
 </style>
 
 <div class="wrap">
@@ -604,23 +616,26 @@ function renderPipe(){
   var accepted=Object.keys(state.review).filter(function(k){return state.review[k]==="accept";}).length;
   var excerpts=run.selectedCount!=null?run.selectedCount:null;
   var rr=retrievalStats(run);
+  var short=(docOf(run.witness)||{}).short||"the deposition";
   var stages=[
-    {k:"Documents", who:"code", v:String(RECORD.docs.length), d:CHUNKS.length+" excerpts, chunked by email and section", key:"record"},
-    {k:"Statements", who:"ai", v:String(m.items), d:"from "+(docOf(run.witness)||{}).short, key:"extract"},
-    {k:"Passages found", who:"code", v: rr ? rr.hit+" of "+rr.total : (excerpts!=null?excerpts:"0")+" excerpts", d: rr ? "found "+rr.hit+" of "+rr.total+" cited passages" : "BM25 over primary documents", key:"search"},
-    {k:"Findings", who:"ai", v:String(m.findings), d:"contradicts or qualifies", key:"compare"},
-    {k:"Quotes verified", who:"code", v:m.verified+" of "+m.quotes, d:"quotes verified · "+m.rejected+" rejected · "+m.held+" held", key:"check"},
-    {k:"Accepted", who:"you", v:accepted+" of "+m.items, d:"of "+m.items+" rows", key:"review"}
+    {n:1, k:"Ingest", who:"code", v:RECORD.docs.length+" documents", d:CHUNKS.length+" excerpts, split by email and contract section. Bates numbers and senders kept.", key:"record"},
+    {n:2, k:"Testimony", who:"ai", v:m.items+" sworn statements", d:"Pulled from "+short+", each with an exact quote and pin cite.", key:"extract"},
+    {n:3, k:"Search", who:"code", v: rr ? rr.hit+" of "+rr.total+" key passages" : (excerpts!=null?excerpts:"0")+" excerpts", d:"Keyword search of the emails, contract, letters and QA log. Pleadings excluded.", key:"search"},
+    {n:4, k:"Compare", who:"ai", v:m.findings+" findings", d:"Statements the documents contradict or qualify, with draft cross questions.", key:"compare"},
+    {n:5, k:"Check", who:"code", v:m.verified+" of "+m.quotes+" quotes verified", d:"Matched word for word to the cited paragraph. "+m.rejected+" rejected, "+m.held+" held for privilege.", key:"check"},
+    {n:6, k:"Review", who:"you", v:accepted+" of "+m.items+" accepted", d:"The attorney accepts or rejects each row. Only verified, accepted rows reach the outline.", key:"review"}
   ];
-  var WHO={ai:"Claude", code:"Fixed rules, not AI", you:"Lawyer"};
-  var segs=stages.map(function(st,i){
-    var cls="seg "+st.who+(s[st.key]==="active"?" active":s[st.key]==="done"?" done":"");
+  var WHO={ai:"Claude", code:"Rules", you:"Lawyer"}, WHOT={ai:"Claude (AI)", code:"Fixed rules, not AI", you:"The attorney"};
+  $("pipe").className="pipe";
+  $("pipe").replaceChildren.apply($("pipe"), stages.map(function(st){
+    var cls="stage"+(s[st.key]==="active"?" active":s[st.key]==="done"?" done":"");
     var v=state.busy&&s[st.key]!=="done"&&st.key!=="record"?"…":st.v;
-    return h("span",{class:cls,title:st.k+" · "+WHO[st.who]+": "+st.d,tabindex:"0"}, h("i",{class:"dot","aria-hidden":"true"}), h("b",null,v), h("span",{class:"sk"}," "+st.k.toLowerCase()));
-  });
-  var line=[]; segs.forEach(function(x,i){ if(i) line.push(h("span",{class:"sdiv","aria-hidden":"true"},"·")); line.push(x); });
-  line.push(h("span",{class:"skey"}, h("i",{class:"dot ai"}),"Claude", h("i",{class:"dot code"}),"Rules", h("i",{class:"dot you"}),"Lawyer"));
-  $("pipe").className="statusline"; $("pipe").replaceChildren.apply($("pipe"), line);
+    return h("div",{class:cls},
+      h("div",{class:"k"}, h("span",{class:"who "+st.who,title:WHOT[st.who]}, st.n+" · "+WHO[st.who])),
+      h("div",{class:"sn"}, st.k),
+      h("div",{class:"v"}, v),
+      h("div",{class:"d"}, st.d));
+  }));
   $("nq").textContent=String(r.exceptions.length); $("nq").className="n"+(r.exceptions.length?" alert":"");
   $("no").textContent=String(outlineRows().length);
 }
