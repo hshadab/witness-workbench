@@ -430,6 +430,39 @@ blockquote,.bclaim,.oitem li,.para{font-family:var(--quote)}
   .rv,.btn,.chip,.citebtn{min-height:32px}
   .di{padding-top:8px;padding-bottom:8px}
 }
+
+/* ===== simplified chrome ===== */
+@media (max-width:980px){.body{grid-template-columns:minmax(0,1fr)}}
+.crumbs{display:none}
+.statusline{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:12px 0 0;padding:9px 14px;background:var(--surface);border:1px solid var(--rule);border-radius:8px;font-size:13px;color:var(--muted)}
+.statusline .seg{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;cursor:default}
+.statusline .seg b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.statusline .sdiv{color:var(--faint)}
+.statusline .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--faint);flex:none}
+.statusline .ai .dot,.statusline .dot.ai{background:var(--accent)}
+.statusline .code .dot,.statusline .dot.code{background:#9AA3AD}
+.statusline .you .dot,.statusline .dot.you{background:var(--lawyer-edge)}
+.statusline .seg.active .dot{animation:pulse 1s infinite}
+.statusline .seg.done .dot{box-shadow:0 0 0 2px var(--good-bg)}
+.statusline .skey{margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--faint)}
+.statusline .skey .dot{margin-left:8px}
+.settings{position:relative}
+.settings>summary{list-style:none;display:inline-flex;align-items:center}
+.settings>summary::-webkit-details-marker{display:none}
+.settings>summary::after{content:"\25BE";margin-left:6px;font-size:10px;color:var(--faint)}
+.setpanel{position:absolute;right:0;top:calc(100% + 6px);z-index:15;background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:12px;display:grid;gap:10px;min-width:260px;box-shadow:0 8px 24px rgba(0,0,0,.14)}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#testq[aria-pressed="true"]{background:var(--bad-bg);border-color:var(--bad);color:var(--bad)}
+.tab.about{margin-left:auto;color:var(--faint);font-size:12.5px}
+@media (max-width:760px){
+  .controls{display:grid;grid-template-columns:1fr 1fr}
+  .controls #go{grid-column:1/-1}
+  .settings>summary{width:100%;justify-content:center}
+  .settings[open]{grid-column:1/-1}
+  .setpanel{position:static;min-width:0;width:auto;margin-top:8px;box-shadow:none}
+  .statusline .skey{margin-left:0;width:100%}
+  .statusline .sk{font-size:12px}
+}
 </style>
 
 <div class="wrap">
@@ -448,14 +481,17 @@ blockquote,.bclaim,.oitem li,.para{font-family:var(--quote)}
       <div class="matter" id="matter"></div>
     </div>
     <div class="controls">
-      <div class="field"><label for="witness">Witness</label>
-        <select id="witness"><option value="dep-holcomb">Derek Holcomb, VP Sales</option></select></div>
-      <div class="field"><label for="lens">Lens</label>
-        <select id="lens"><option value="examine">Examining (adverse)</option><option value="defend">Preparing our witness</option></select></div>
-      <div class="field"><label for="runsel">Run</label><select id="runsel"></select></div>
+      <select id="witness" hidden aria-hidden="true"><option value="dep-holcomb">Derek Holcomb, VP Sales</option></select>
+      <input type="checkbox" id="plant" hidden>
+      <button class="btn" id="testq" type="button" aria-pressed="false" title="Plant a fabricated quote in the run and watch the checker reject it">Test the checker</button>
+      <details class="settings"><summary class="btn">Run settings</summary>
+        <div class="setpanel">
+          <div class="field"><label for="lens">Lens</label>
+            <select id="lens"><option value="examine">Examining (adverse)</option><option value="defend">Preparing our witness</option></select></div>
+          <div class="field"><label for="runsel">Run</label><select id="runsel"></select></div>
+        </div></details>
       <button class="btn primary" id="go" type="button">Run live with Claude</button>
       <button class="btn" id="stop" type="button" hidden>Stop</button>
-      <label class="check" for="plant"><input type="checkbox" id="plant"> Plant a fabricated quote</label>
     </div>
   </header>
   <div id="notice" class="notice" hidden></div>
@@ -466,11 +502,10 @@ blockquote,.bclaim,.oitem li,.para{font-family:var(--quote)}
   <nav class="crumbs" id="crumbs" aria-label="Location"></nav>
   <nav class="tabs" role="tablist" id="tabs">
     <button class="tab" role="tab" data-tab="matrix" aria-selected="true">Contradiction matrix</button>
-    <button class="tab" role="tab" data-tab="queue">Review queue <span class="n" id="nq">0</span></button>
+    <button class="tab" role="tab" data-tab="queue" hidden>Review queue <span class="n" id="nq">0</span></button>
     <button class="tab" role="tab" data-tab="outline">Deposition outline <span class="n" id="no">0</span></button>
     <button class="tab" role="tab" data-tab="brief">Brief cite check</button>
-    <button class="tab" role="tab" data-tab="audit">Audit trail</button>
-    <button class="tab" role="tab" data-tab="how">How it works</button>
+    <button class="tab about" role="tab" data-tab="about" title="Audit trail and how it works">ⓘ About this run</button>
   </nav>
 
   <div class="body" id="body">
@@ -1022,18 +1057,22 @@ function renderPipe(){
   var excerpts=run.selectedCount!=null?run.selectedCount:null;
   var rr=retrievalStats(run);
   var stages=[
-    {k:"Record", who:"code", v:RECORD.docs.length+" docs", d:CHUNKS.length+" excerpts, chunked by email and section", key:"record"},
-    {k:"Testimony", who:"ai", v:m.items+" assertions", d:"from "+(docOf(run.witness)||{}).short, key:"extract"},
-    {k:"Search", who:"code", v:(excerpts!=null?excerpts:"0")+" excerpts", d: rr ? "found "+rr.hit+" of "+rr.total+" cited passages" : "BM25 over primary documents", key:"search"},
-    {k:"Compare", who:"ai", v:m.findings+" findings", d:"contradicts or qualifies", key:"compare"},
-    {k:"Check", who:"code", v:m.verified+"/"+m.quotes, d:"quotes verified · "+m.rejected+" rejected · "+m.held+" held", key:"check"},
-    {k:"Review", who:"you", v:accepted+" accepted", d:"of "+m.items+" rows", key:"review"}
+    {k:"Documents", who:"code", v:String(RECORD.docs.length), d:CHUNKS.length+" excerpts, chunked by email and section", key:"record"},
+    {k:"Statements", who:"ai", v:String(m.items), d:"from "+(docOf(run.witness)||{}).short, key:"extract"},
+    {k:"Passages found", who:"code", v: rr ? rr.hit+" of "+rr.total : (excerpts!=null?excerpts:"0")+" excerpts", d: rr ? "found "+rr.hit+" of "+rr.total+" cited passages" : "BM25 over primary documents", key:"search"},
+    {k:"Findings", who:"ai", v:String(m.findings), d:"contradicts or qualifies", key:"compare"},
+    {k:"Quotes verified", who:"code", v:m.verified+" of "+m.quotes, d:"quotes verified · "+m.rejected+" rejected · "+m.held+" held", key:"check"},
+    {k:"Accepted", who:"you", v:accepted+" of "+m.items, d:"of "+m.items+" rows", key:"review"}
   ];
-  $("pipe").replaceChildren.apply($("pipe"), stages.map(function(st){
-    var cls="stage"+(s[st.key]==="active"?" active":s[st.key]==="done"?" done":"");
-    return h("div",{class:cls}, h("span",{class:"who "+st.who, title: st.who==="ai"?"Claude":st.who==="code"?"Fixed rules, not AI":"Attorney"}, st.who==="ai"?"Claude":st.who==="code"?"Rules":"Lawyer"),
-      h("div",{class:"k"},st.k), h("div",{class:"v"},state.busy&&s[st.key]!=="done"&&st.key!=="record"?"…":st.v), h("div",{class:"d"},st.d));
-  }));
+  var WHO={ai:"Claude", code:"Fixed rules, not AI", you:"Lawyer"};
+  var segs=stages.map(function(st,i){
+    var cls="seg "+st.who+(s[st.key]==="active"?" active":s[st.key]==="done"?" done":"");
+    var v=state.busy&&s[st.key]!=="done"&&st.key!=="record"?"…":st.v;
+    return h("span",{class:cls,title:st.k+" · "+WHO[st.who]+": "+st.d,tabindex:"0"}, h("i",{class:"dot","aria-hidden":"true"}), h("b",null,v), h("span",{class:"sk"}," "+st.k.toLowerCase()));
+  });
+  var line=[]; segs.forEach(function(x,i){ if(i) line.push(h("span",{class:"sdiv","aria-hidden":"true"},"·")); line.push(x); });
+  line.push(h("span",{class:"skey"}, h("i",{class:"dot ai"}),"Claude", h("i",{class:"dot code"}),"Rules", h("i",{class:"dot you"}),"Lawyer"));
+  $("pipe").className="statusline"; $("pipe").replaceChildren.apply($("pipe"), line);
   $("nq").textContent=String(r.exceptions.length); $("nq").className="n"+(r.exceptions.length?" alert":"");
   $("no").textContent=String(outlineRows().length);
 }
@@ -1092,7 +1131,8 @@ function renderMatrix(main){
     if(q && (r.topic+" "+r.quote+" "+r.evidence.map(function(e){return e.quote;}).join(" ")).toLowerCase().indexOf(q)<0) return false; return true; });
   var order={contradicts:0,qualifies:1,consistent:2,no_support:3,missing:4}, mo={high:0,medium:1,low:2};
   shown.sort(function(a,b){ return (order[a.status]-order[b.status]) || ((mo[a.materiality]||3)-(mo[b.materiality]||3)) || (parseInt(a.id.slice(1))-parseInt(b.id.slice(1))); });
-  var chips=[["all","All "+rows.length],["findings","Findings"],["contradicts","Contradictions"],["held","Needs attention"]].map(function(c){
+  var nEx=state.result.exceptions.length;
+  var chips=[["all","All "+rows.length],["findings","Findings"],["contradicts","Contradictions"],["held","Needs attention"+(nEx?" · "+nEx:"")]].map(function(c){
     return h("button",{class:"chip",type:"button","aria-pressed":state.filter===c[0]?"true":"false",onclick:function(){state.filter=c[0];render();}},c[1]); });
   var search=h("input",{type:"search",placeholder:"Search topics and quotes",value:state.q||"","aria-label":"Search the matrix",
     oninput:function(e){ state.q=e.target.value; var pos=e.target.selectionStart; render(); var el=document.querySelector(".gridtools input[type=search]"); if(el){ el.focus(); try{el.setSelectionRange(pos,pos);}catch(_){} } }});
@@ -1119,7 +1159,9 @@ function renderMatrix(main){
       h("td",{class:"cdec"}, dec)));
     if(open) body.push(h("tr",null, h("td",{class:"detail",colspan:"6"}, rowEl(r))));
   });
+  var exBox=null; if(f==="held"){ exBox=h("div",{style:"margin-bottom:14px"}); renderQueue(exBox); }
   main.replaceChildren(
+    exBox||"",
     h("div",{class:"gridtools"}, chips, search, h("span",{class:"legend"}, "Click a row for analysis and questions. Claude proposes, the checker verifies, you decide.")),
     shown.length?h("div",{class:"rgrid"}, h("table",null,
       h("thead",null,h("tr",null, h("th",{style:"width:42px"},"ID"), h("th",{style:"width:30%"},"Sworn testimony"), h("th",{style:"width:30%"},"Confronting record"),
@@ -1300,7 +1342,7 @@ function svgIcon(kind){ var ns="http://www.w3.org/2000/svg", s=document.createEl
 function batesRange(d){ var b=d.bates||[]; if(!b.length) return ""; if(b.length===1) return b[0]; var a=b[0], z=b[b.length-1], pre=a.replace(/\d+$/,""); return a+" to "+(z.indexOf(pre)===0?z.slice(pre.length):z); }
 function docLine(d){ var r=batesRange(d); if(r) return r; var m=d.title.match(/\(([^)]+)\)\s*$/); return m?m[1]:d.kind; }
 function navOpen(id){
-  if(state.tab==="audit"||state.tab==="how"||state.tab==="outline"){ state.tab="matrix"; render(); }
+  if(state.tab==="audit"||state.tab==="how"||state.tab==="outline"||state.tab==="about"){ state.tab="matrix"; render(); }
   openViewer(id, 1, null); renderNav();
 }
 function renderNav(){
@@ -1371,13 +1413,15 @@ function render(){
   renderPipe();
   document.querySelectorAll(".tab").forEach(function(t){ t.setAttribute("aria-selected", t.dataset.tab===state.tab?"true":"false"); });
   var main=$("main");
-  var full = state.tab==="audit"||state.tab==="how"||state.tab==="outline";
+  if(state.tab==="queue"){ state.tab="matrix"; state.filter="held"; }
+  var full = state.tab==="audit"||state.tab==="how"||state.tab==="outline"||state.tab==="about";
   $("body").className="body"+(full?" full":""); $("viewer").hidden=full;
   if(state.tab==="matrix") renderMatrix(main);
   else if(state.tab==="queue"){ $("body").className="body"; $("viewer").hidden=false; renderQueue(main); }
   else if(state.tab==="outline") renderOutline(main);
   else if(state.tab==="brief"){ $("body").className="body"; $("viewer").hidden=false; renderBrief(main); }
   else if(state.tab==="audit") renderAudit(main);
+  else if(state.tab==="about"){ var a=h("div"), b=h("div",{style:"margin-top:18px"}); renderAudit(a); renderHow(b); main.replaceChildren(a,b); }
   else renderHow(main);
   $("witness").value=state.run.witness; $("lens").value=state.run.lens||"examine";
   renderNav(); renderCrumbs();
@@ -1479,6 +1523,9 @@ $("runsel").addEventListener("change", function(e){ selectRun(state.runs[+e.targ
 $("go").addEventListener("click", runLive);
 $("stop").addEventListener("click", function(){ if(state.ctl) state.ctl.abort(); });
 $("plant").addEventListener("change", function(e){ state.plant=e.target.checked; state.result=null; recompute(); render(); if(state.plant){ state.filter="all"; } });
+document.addEventListener("click", function(e){ var d=document.querySelector("details.settings"); if(d&&d.open&&!d.contains(e.target)) d.open=false; });
+$("testq").addEventListener("click", function(){ var cb=$("plant"); cb.checked=!cb.checked; state.plant=cb.checked; if(state.plant){ state.filter="held"; state.tab="matrix"; } state.result=null; recompute(); render();
+  this.setAttribute("aria-pressed", state.plant?"true":"false"); this.textContent=state.plant?"Remove test quote":"Test the checker"; });
 $("vdoc").addEventListener("change", function(e){ if(e.target.value) openViewer(e.target.value, 1, null); });
 $("vall").addEventListener("click", function(){ state.viewer.all=!state.viewer.all; renderViewer(); });
 $("vclose").addEventListener("click", function(){ $("viewer").setAttribute("data-open","false"); state.viewer={doc:null,para:null,quote:null,all:false}; renderViewer(); });
